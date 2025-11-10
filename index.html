@@ -3,50 +3,50 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Birthday Climb — Baiq Ila Karunia (Animated Sprite)</title>
+<title>Birthday Climb — Baiq Ila Karunia (Chibi Girl)</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg1:#061225; --bg2:#0b2740; --accent:#ff6ec7; --soft:#ffe066;
+    --bg1:#07111a; --accent:#ff6ec7; --soft:#ffe066; --white:#fff;
   }
   *{box-sizing:border-box}
-  html,body{height:100%; margin:0; font-family:'Press Start 2P',cursive; background:linear-gradient(#000814,#001033); color:#fff; overflow:hidden}
+  html,body{height:100%; margin:0; font-family:'Press Start 2P',cursive; background:linear-gradient(#07111a,#021018); color:#fff; overflow:hidden}
 
   /* Landing overlay */
   #landing {
     position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
     background:linear-gradient(180deg, rgba(0,0,0,.6), rgba(0,0,0,.4));
-    z-index:9999; transition:opacity .6s ease;
+    z-index:9999; transition:opacity .45s ease;
   }
   .landing-card{
-    width:min(820px,92%); padding:28px; border-radius:14px; text-align:center;
+    width:min(820px,92%); padding:26px; border-radius:12px; text-align:center;
     background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
     border:2px solid rgba(255,255,255,.04);
-    box-shadow: 0 18px 60px rgba(0,0,0,.6);
+    box-shadow: 0 14px 60px rgba(0,0,0,.6);
   }
   #startBtn{
-    margin-top:18px; padding:12px 18px; border-radius:10px; border:none; cursor:pointer;
+    margin-top:14px; padding:12px 18px; border-radius:10px; border:none; cursor:pointer;
     background:var(--soft); color:#111; font-weight:700;
   }
 
   /* HUD */
   #hud {
     position:fixed; left:18px; top:14px; z-index:60; text-shadow:0 2px 0 #000;
-    background:rgba(0,0,0,.35); padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.04)
+    background:rgba(0,0,0,.35); padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.04); display:none;
   }
   #hud .title{font-size:12px}
   #progress{font-size:11px; color:var(--soft); margin-top:6px}
 
-  /* message box for platform messages */
+  /* platform message box */
   #platformMessage {
-    position:fixed; left:50%; top:14%; transform:translateX(-50%);
-    background:linear-gradient(180deg, rgba(0,0,0,.7), rgba(0,0,0,.55));
+    position:fixed; left:50%; top:14%; transform:translateX(-50%) translateY(-8px);
+    background:linear-gradient(180deg, rgba(0,0,0,.75), rgba(0,0,0,.55));
     color:#fff; padding:10px 16px; border-radius:12px; font-size:12px;
     max-width:70vw; text-align:center; z-index:70; opacity:0; transition:opacity .35s, transform .35s;
     pointer-events:none;
   }
 
-  /* canvas container */
+  /* game container */
   #gameWrap{position:relative; width:100%; height:100vh; display:flex; align-items:center; justify-content:center; z-index:1}
   canvas{ border-radius:10px; box-shadow:0 18px 80px rgba(0,0,0,.7); image-rendering:pixelated }
 
@@ -58,12 +58,10 @@
     border:2px solid rgba(255,255,255,.06); backdrop-filter: blur(6px); box-shadow:0 30px 90px rgba(0,0,0,.6);
   }
   .photo-gallery{display:flex; flex-wrap:wrap; justify-content:center; gap:12px; margin-top:12px}
-  .photo-gallery img{width:160px; aspect-ratio:3/4; object-fit:cover; border-radius:12px; opacity:0; transform:translateY(18px) scale(.95); transition:opacity .9s ease, transform .9s ease;}
+  .photo-gallery img{width:160px; aspect-ratio:3/4; object-fit:cover; border-radius:12px; opacity:0; transform:translateY(12px) scale(.96); transition:opacity .8s ease, transform .8s ease;}
 
-  /* confetti / balloons */
   .confetti,.balloons{position:fixed; inset:0; pointer-events:none; z-index:998}
 
-  /* small responsive */
   @media(max-width:900px){
     canvas{width:92vw;height:auto}
     .photo-gallery img{width:36vw}
@@ -76,7 +74,7 @@
 <div id="landing" role="dialog" aria-modal="true">
   <div class="landing-card">
     <div style="font-size:20px;color:var(--soft)">🎂 Baiq Ila Karunia — Climb Edition</div>
-    <div style="margin-top:10px;color:#ddd;font-size:11px">Naik sampai puncak (24 tumpuan). Nikmati animasinya & pesan manis di tiap tumpuan ✨</div>
+    <div style="margin-top:10px;color:#ddd;font-size:11px">Naik sampai puncak (24 tumpuan). Nikmati animasi & pesan ulang tahun di tiap tumpuan ✨</div>
     <button id="startBtn">Mulai Game</button>
   </div>
 </div>
@@ -87,7 +85,7 @@
   <div id="progress">Tumpuan 1 / 24</div>
 </div>
 
-<!-- Platform message -->
+<!-- platform message -->
 <div id="platformMessage" aria-live="polite"></div>
 
 <!-- Game -->
@@ -118,24 +116,20 @@
 
 <script>
 /* ======================
-   CONFIG
+   CONFIG & CANVAS
    ====================== */
 const CANVAS_W = 1366, CANVAS_H = 768;
 const PLATFORM_COUNT = 24;
-const STEP_Y = 64;           // vertical gap
+const STEP_Y = 64;
 const PLATFORM_MIN_W = 110, PLATFORM_MAX_W = 180;
 
-/* ======================
-   CANVAS & CONTEXT
-   ====================== */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 canvas.width = CANVAS_W; canvas.height = CANVAS_H;
 
 /* ======================
-   WORLD, PLAYER, CAMERA
+   WORLD, PLATFORMS, GOAL
    ====================== */
-// world coords: y decreases upwards (we treat starting baseline as y=0)
 const platforms = [];
 (function genPlatforms(){
   const centerX = CANVAS_W/2;
@@ -146,35 +140,37 @@ const platforms = [];
     let x = prevX + jitter;
     x += (CANVAS_W/2 - x) * 0.08;
     x = Math.max(20, Math.min(CANVAS_W - w - 20, x));
-    const y = 0 - i * STEP_Y; // bottom is 0, higher platforms negative
+    const y = 0 - i * STEP_Y; // world y (0 is start baseline)
     platforms.push({ x, y, w, h:18 });
     prevX = x;
   }
 })();
-
 const topP = platforms[platforms.length-1];
 const goal = { x: topP.x + topP.w/2 - 16, y: topP.y - 86, w:32, h:72 };
 
+/* ======================
+   CAMERA & WORLD OFFSET
+   ====================== */
 let worldOffsetY = 0;
 function worldToScreenY(worldY){
   return worldY - worldOffsetY + (CANVAS_H - 160);
 }
 
-// player sprite (simple pixel-art frames drawn on canvas)
+/* ======================
+   PLAYER (world coords) - chibi girl (drawn)
+   ====================== */
 const player = {
   x: platforms[0].x + platforms[0].w/2 - 14,
   y: platforms[0].y - 34,
   w:28, h:34,
   vx:0, vy:0, onGround:false,
-  dir:1, // 1 right, -1 left
-  anim:0, // frame progress
-  state:'idle' // 'idle','walk','jump'
+  anim:0, state:'idle'
 };
 
-const GRAV = 0.72, MOVE = 1.15, JUMP = 14.0;
+const GRAV = 0.72, MOVE = 1.1, JUMP = 13.6;
 
 /* ======================
-   HUD & message data
+   MESSAGES (23) - ulang tahun
    ====================== */
 const PLATFORM_MESSAGES = [
   "Hari ini spesial, sama seperti langkah pertamamu di sini ✨",
@@ -208,7 +204,7 @@ let lastTouchedPlatformIndex = -1;
 /* ======================
    INPUT
    ====================== */
-const keys = {left:false,right:false,up:false};
+const keys = { left:false, right:false, up:false };
 addEventListener('keydown', e=>{
   if(e.key==='ArrowLeft' || e.key==='a') keys.left=true;
   if(e.key==='ArrowRight' || e.key==='d') keys.right=true;
@@ -221,47 +217,22 @@ addEventListener('keyup', e=>{
 });
 
 /* ======================
-   SPRITE DRAW (pixel-ish)
+   VISUAL EFFECTS: sparks
    ====================== */
-function drawPlayer(x,y,state,anim,dir){
-  // we draw a tiny pixel-art character using rectangles (no external image)
-  // x,y are screen coords
-  const sx = Math.round(x), sy = Math.round(y);
-  ctx.save();
-  // body shadow
-  ctx.fillStyle = '#0008'; ctx.fillRect(sx+2,sy+4,player.w,player.h);
-  // head
-  ctx.fillStyle = '#ffcc99'; ctx.fillRect(sx+6,sy+2,12,10);
-  // body color varies with state (idle, walk, jump)
-  const bodyColor = state==='jump' ? '#ff7b7b' : (state==='walk' ? '#ff4d4d' : '#ff2d2d');
-  ctx.fillStyle = bodyColor; ctx.fillRect(sx+4,sy+12,20,16);
-  // eyes
-  ctx.fillStyle = '#fff'; ctx.fillRect(sx+9,sy+5,3,3); ctx.fillRect(sx+14,sy+5,3,3);
-  ctx.fillStyle = '#000'; ctx.fillRect(sx+10,sy+6,1,1); ctx.fillRect(sx+15,sy+6,1,1);
-  // simple feet animation: move left/right
-  const footOffset = state==='walk' ? Math.sin(anim*0.35)*4 : 0;
-  ctx.fillStyle = '#663300'; ctx.fillRect(sx+6+footOffset, sy+26,6,4); ctx.fillRect(sx+16-footOffset, sy+26,6,4);
-  ctx.restore();
-}
-
-/* ======================
-   VISUAL EFFECTS
-   ====================== */
-function spawnSpark(x,y,n=8){
-  const arr = [];
+const sparks = [];
+function spawnSpark(screenX, screenY, n=10){
   for(let i=0;i<n;i++){
-    arr.push({
-      x, y,
-      vx:(Math.random()-0.5)*4,
-      vy:(Math.random()*-2)-1.5,
-      life: Math.random()*700+400,
+    sparks.push({
+      x: screenX + (Math.random()-0.5)*24,
+      y: screenY + (Math.random()-0.5)*8,
+      vx: (Math.random()-0.5)*3,
+      vy: -2 - Math.random()*2,
+      life: 600 + Math.random()*700,
       t:0,
       c: ['#ffe066','#ff6ec7','#6ecbff','#ffffff'][Math.floor(Math.random()*4)]
     });
   }
-  sparks.push(...arr);
 }
-const sparks = [];
 
 /* ======================
    AUDIO
@@ -270,51 +241,74 @@ const endingAudio = document.getElementById('endingAudio');
 endingAudio.preload = 'auto';
 
 /* ======================
-   GAME LOGIC
+   DRAW CHIBI (pixel-like)
+   ====================== */
+function drawChibi(sx, sy, state, anim){
+  // sx,sy = screen coords (top-left)
+  ctx.save();
+  // slight drop shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)'; ctx.fillRect(sx+2, sy+4, player.w, player.h);
+  // hair
+  ctx.fillStyle = '#5b2a86'; ctx.fillRect(sx+6, sy+2, 16, 8);
+  // face
+  ctx.fillStyle = '#ffd8b6'; ctx.fillRect(sx+8, sy+8, 12, 10);
+  // body
+  ctx.fillStyle = '#ff6ec7'; ctx.fillRect(sx+6, sy+18, 16, 12);
+  // eyes
+  ctx.fillStyle = '#fff'; ctx.fillRect(sx+9, sy+10, 3,3); ctx.fillRect(sx+14, sy+10,3,3);
+  ctx.fillStyle = '#000'; ctx.fillRect(sx+10, sy+11,1,1); ctx.fillRect(sx+15, sy+11,1,1);
+  // simple walking legs animation
+  const foot = Math.sin(anim*0.35)*3;
+  ctx.fillStyle = '#5b2a86';
+  ctx.fillRect(sx+8 + foot, sy+28, 5, 4);
+  ctx.fillRect(sx+15 - foot, sy+28, 5, 4);
+  ctx.restore();
+}
+
+/* ======================
+   RENDER & UPDATE
    ====================== */
 let running = false;
-
-// Update loop
+let last = performance.now();
 function update(dt=16){
-  // input
-  if(keys.left) { player.vx -= MOVE; player.dir = -1; }
-  if(keys.right){ player.vx += MOVE; player.dir = 1; }
-  if(keys.up && player.onGround){ player.vy = -JUMP; player.onGround=false; keys.up=false; }
+  // controls
+  if(keys.left) player.vx -= MOVE;
+  if(keys.right) player.vx += MOVE;
+  if(keys.up && player.onGround){ player.vy = -JUMP; player.onGround = false; keys.up = false; }
 
   player.vy += GRAV;
-  player.vx *= 0.86;
+  player.vx *= 0.88;
   player.x += player.vx;
   player.y += player.vy;
 
-  // collisions
+  // collisions (world coords)
   player.onGround = false;
   for(let i=0;i<platforms.length;i++){
     const p = platforms[i];
-    const px = p.x;
-    const py = p.y;
-    if (player.x + player.w > px && player.x < px + p.w) {
-      const playerBottom = player.y + player.h;
-      const landTolerance = 10;
-      const screenPY = py; // py is world; we compare in world coords (player.y in world)
-      if (playerBottom > py && playerBottom < py + landTolerance && player.vy >= 0) {
+    // world coords: compare player bottom to platform y
+    const pb = player.y + player.h;
+    if(player.x + player.w > p.x && player.x < p.x + p.w){
+      if(pb > p.y && pb < p.y + 18 && player.vy >= 0){
         // land
-        player.y = py - player.h;
+        player.y = p.y - player.h;
         player.vy = 0;
         player.onGround = true;
 
-        // platform index detection for messages/progress
         if(i > lastTouchedPlatformIndex){
           lastTouchedPlatformIndex = i;
-          // spawn sparkles at screen position
+          // spawn sparks at screen pos
           const sx = player.x + player.w/2;
-          const sy = worldToScreenY(py);
-          spawnSpark(sx, sy+2, 12);
-          // show message if available (exclude last/puncak)
+          const sy = worldToScreenY(p.y);
+          spawnSpark(sx, sy+2, 14);
+
+          // show message (if available and not last puncak)
           if(i < PLATFORM_MESSAGES.length){
             showPlatformMessage(PLATFORM_MESSAGES[i]);
           }
-          // update progress HUD
-          document.getElementById('progress').textContent = `Tumpuan ${i+1} / ${PLATFORM_COUNT}`;
+
+          // update progress HUD text
+          const progressEl = document.getElementById('progress');
+          if(progressEl) progressEl.textContent = `Tumpuan ${i+1} / ${PLATFORM_COUNT}`;
         }
       }
     }
@@ -324,96 +318,76 @@ function update(dt=16){
   if(player.x < 8){ player.x = 8; player.vx = 0; }
   if(player.x + player.w > CANVAS_W - 8){ player.x = CANVAS_W - 8 - player.w; player.vx = 0; }
 
-  // camera follow vertical (smooth)
-  const targetOffset = player.y - (CANVAS_H * 0.4);
-  worldOffsetY += (targetOffset - worldOffsetY) * 0.12;
+  // CAMERA follow using screen-player position logic (robust vertical follow)
+  const screenPlayerY = worldToScreenY(player.y);
+  if(screenPlayerY < CANVAS_H * 0.36){
+    worldOffsetY -= (CANVAS_H * 0.36 - screenPlayerY) * 0.14;
+  } else if(screenPlayerY > CANVAS_H * 0.68){
+    worldOffsetY += (screenPlayerY - CANVAS_H * 0.68) * 0.08;
+  }
   if(worldOffsetY < 0) worldOffsetY = 0;
 
   // reached goal?
   if(player.x + player.w > goal.x && player.x < goal.x + goal.w
-      && player.y + player.h > goal.y && player.y < goal.y + goal.h){
-    // reached top -> end
+     && player.y + player.h > goal.y && player.y < goal.y + goal.h){
     running = false;
-    setTimeout(()=> showEnding(), 400);
+    setTimeout(()=> showEnding(), 300);
   }
 
   // update sparks
   for(let i=sparks.length-1;i>=0;i--){
     const s = sparks[i];
     s.t += dt;
-    s.x += s.vx; s.y += s.vy; s.vy += 0.08;
+    s.x += s.vx; s.y += s.vy; s.vy += 0.06;
     if(s.t > s.life) sparks.splice(i,1);
   }
 
-  // anim state
-  if(!player.onGround) player.state='jump';
-  else if(Math.abs(player.vx) > 0.6) player.state='walk';
-  else player.state='idle';
-  player.anim += (player.state==='walk'? 1.6 : 0.6);
+  // anim counters
+  player.anim += (player.onGround && Math.abs(player.vx)>0.6) ? 1.8 : 0.6;
+  player.state = player.onGround ? (Math.abs(player.vx)>0.8 ? 'walk' : 'idle') : 'jump';
 }
 
-/* ======================
-   RENDER
-   ====================== */
 function render(){
-  // clear
   ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
 
-  // parallax sky & mountains
-  // layer 1: sky gradient (already canvas bg) - we draw soft sun gradient
-  const skyGrad = ctx.createLinearGradient(0,0,0,CANVAS_H*0.6);
-  skyGrad.addColorStop(0,'#87CEEB'); skyGrad.addColorStop(1,'#6ecbff');
-  ctx.fillStyle = skyGrad;
-  ctx.fillRect(0,0,CANVAS_W,CANVAS_H*0.6);
+  // sky gradient
+  const g = ctx.createLinearGradient(0,0,0,CANVAS_H*0.6);
+  g.addColorStop(0,'#87CEEB'); g.addColorStop(1,'#6ecbff');
+  ctx.fillStyle = g; ctx.fillRect(0,0,CANVAS_W,CANVAS_H*0.6);
 
-  // mountains parallax (simple blobs)
+  // parallax ground shapes
   ctx.save();
-  const parallax = worldOffsetY * 0.02;
   ctx.fillStyle = '#10354a';
-  ctx.beginPath();
-  ctx.ellipse(200, 320 + parallax, 340, 140, 0, 0, Math.PI*2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.ellipse(980, 360 + parallax*1.1, 420, 160, 0,0, Math.PI*2);
-  ctx.fill();
+  ctx.beginPath(); ctx.ellipse(260, 360 + worldOffsetY*0.02, 340, 140, 0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(980, 400 + worldOffsetY*0.025, 420, 160, 0,0,Math.PI*2); ctx.fill();
   ctx.restore();
 
-  // draw platforms in world->screen coords
+  // draw platforms
   for(let i=0;i<platforms.length;i++){
     const p = platforms[i];
     const sx = p.x;
     const sy = worldToScreenY(p.y);
     // shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fillRect(sx-6, sy+6, p.w+12, p.h);
-    // platform body with subtle gradient
-    const g = ctx.createLinearGradient(sx, sy, sx, sy + p.h);
+    ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.fillRect(sx-6, sy+6, p.w+12, p.h);
+    // body
+    const grad = ctx.createLinearGradient(sx, sy, sx, sy+p.h);
     const shades = ['#ffd8aa','#c6f1ff','#fff0a8','#c6ffd1','#ffdada','#d6eaff'];
-    g.addColorStop(0, shades[i%shades.length]);
-    g.addColorStop(1, '#ffffff44');
-    ctx.fillStyle = g;
-    ctx.fillRect(sx, sy, p.w, p.h);
-    // rim
-    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(sx, sy, p.w, p.h);
+    grad.addColorStop(0, shades[i%shades.length]); grad.addColorStop(1,'#ffffff33');
+    ctx.fillStyle = grad; ctx.fillRect(sx, sy, p.w, p.h);
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)'; ctx.lineWidth = 1; ctx.strokeRect(sx, sy, p.w, p.h);
   }
 
-  // draw goal flag (world->screen)
+  // draw goal flag
   const gx = goal.x, gy = worldToScreenY(goal.y);
-  ctx.fillStyle = '#333';
-  ctx.fillRect(gx + goal.w/2 - 3, gy, 6, goal.h);
+  ctx.fillStyle = '#333'; ctx.fillRect(gx + goal.w/2 - 3, gy, 6, goal.h);
+  ctx.fillStyle = '--'; // placeholder
   ctx.fillStyle = '#ff6ec7';
-  ctx.beginPath();
-  ctx.moveTo(gx + goal.w/2 + 3, gy + 8);
-  ctx.lineTo(gx + goal.w/2 + 64, gy + 22);
-  ctx.lineTo(gx + goal.w/2 + 3, gy + 36);
-  ctx.closePath(); ctx.fill();
+  ctx.beginPath(); ctx.moveTo(gx + goal.w/2 + 3, gy + 8); ctx.lineTo(gx + goal.w/2 + 64, gy + 22); ctx.lineTo(gx + goal.w/2 + 3, gy + 36); ctx.closePath(); ctx.fill();
 
-  // draw sparks (screen coords)
+  // draw sparks
   for(const s of sparks){
-    ctx.fillStyle = s.c;
     ctx.globalAlpha = 1 - (s.t / s.life);
+    ctx.fillStyle = s.c;
     ctx.fillRect(s.x, s.y, 4, 4);
     ctx.globalAlpha = 1;
   }
@@ -421,26 +395,26 @@ function render(){
   // draw player (world->screen)
   const px = player.x;
   const py = worldToScreenY(player.y);
-  drawPlayer(px, py, player.state, player.anim, player.dir);
+  drawChibi(px, py, player.state, player.anim);
 
-  // small HUD drawn on canvas? we use DOM HUD so skip
+  // done
 }
 
 /* ======================
-   GAME LOOP
+   LOOP
    ====================== */
-let last = performance.now();
+let lastTime = performance.now();
 function loop(ts){
   if(!running) return;
-  const dt = Math.min(40, ts - last);
-  last = ts;
+  const dt = Math.min(40, ts - lastTime);
+  lastTime = ts;
   update(dt);
   render();
   requestAnimationFrame(loop);
 }
 
 /* ======================
-   MESSAGES & UI
+   UI: messages, ending, confetti
    ====================== */
 const platformMessageEl = document.getElementById('platformMessage');
 let platformMsgTimeout = null;
@@ -455,9 +429,7 @@ function showPlatformMessage(text){
   }, 2600);
 }
 
-/* ======================
-   ENDING: confetti + balloons + photos + audio
-   ====================== */
+/* confetti / balloons */
 const confettiWrap = document.getElementById('confetti');
 const balloonsWrap = document.getElementById('balloons');
 const endingEl = document.getElementById('ending');
@@ -481,7 +453,6 @@ function confettiBurst(n=120){
     setTimeout(()=> el.remove(), 3700);
   }
 }
-
 function floatBalloons(n=8){
   const colors = ['#ff6ec7','#6ecbff','#ffe066','#7CFF6E'];
   for(let i=0;i<n;i++){
@@ -499,58 +470,54 @@ function floatBalloons(n=8){
 }
 
 function showEnding(){
-  // stop loop & show overlay
-  document.getElementById('gameWrap').style.pointerEvents = 'none';
   endingEl.style.display = 'flex';
-  confettiBurst(160);
-  floatBalloons(10);
+  confettiBurst(180);
+  floatBalloons(12);
 
-  // show photos
+  // reveal photos
   photoImgs.forEach((img,i)=>{
-    setTimeout(()=>{ img.style.opacity = '1'; img.style.transform = 'translateY(0) scale(1)'; }, 220 + i*420);
+    setTimeout(()=>{ img.style.opacity = '1'; img.style.transform = 'translateY(0) scale(1)'; }, 240 + i*420);
   });
 
   // play audio 40-70s
   try{
     endingAudio.currentTime = 40;
     endingAudio.volume = 0.85;
-    endingAudio.play().catch(()=>{/* if blocked */});
-    const stopAt = 70;
-    function checkTime(){ if(endingAudio.currentTime >= stopAt){ endingAudio.pause(); endingAudio.removeEventListener('timeupdate', checkTime); } }
+    endingAudio.play().catch(()=>{/* blocked */});
+    function checkTime(){ if(endingAudio.currentTime >= 70){ endingAudio.pause(); endingAudio.removeEventListener('timeupdate', checkTime); } }
     endingAudio.addEventListener('timeupdate', checkTime);
   }catch(e){ console.warn('audio err', e) }
 }
 
 /* ======================
-   START BUTTON & INIT
+   START BUTTON
    ====================== */
 document.getElementById('startBtn').addEventListener('click', ()=>{
-  // hide landing
+  // hide landing overlay
   const L = document.getElementById('landing');
   L.style.opacity = '0';
-  setTimeout(()=> L.style.display = 'none', 600);
+  setTimeout(()=> L.style.display = 'none', 450);
 
-  // reset states
+  // reset state
   lastPlatformShown = -1;
   lastTouchedPlatformIndex = -1;
   document.getElementById('progress').textContent = `Tumpuan 1 / ${PLATFORM_COUNT}`;
   document.getElementById('hud').style.display = 'block';
 
-  // position player on bottom platform
+  // place player on bottom
   const bottom = platforms[0];
   player.x = bottom.x + bottom.w/2 - player.w/2;
   player.y = bottom.y - player.h - 2;
   player.vx = player.vy = 0;
+  worldOffsetY = 0;
 
-  // start loop
   running = true;
-  last = performance.now();
+  lastTime = performance.now();
   requestAnimationFrame(loop);
 });
 
-/* initial draw so user sees something */
+/* small initial render */
 render();
-
 </script>
 </body>
 </html>
