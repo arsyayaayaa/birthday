@@ -80,6 +80,7 @@ canvas{image-rendering:pixelated; background: linear-gradient(#87CEEB 60%, #55aa
 <!-- HUD -->
 <div id="hud" aria-hidden="true">
   <div class="title">Naik sampai puncak!</div>
+  <div id="progress" style="font-size:11px;margin-top:6px;color:#ffe066">Tumpuan 1 / 24</div>
 </div>
 
 <!-- Game -->
@@ -149,7 +150,7 @@ const platforms = [];
     // each platform higher than previous
     const idx = i;
     // smooth random: small jitter added to prevX, bias toward center
-    const jitter = (Math.random() - 0.5) * 240 * (0.7); // reduce extremes
+    const jitter = (Math.random() - 0.5) * 240 * 0.7; // reduce extremes
     let w = Math.round(PLATFORM_MIN_W + Math.random()*(PLATFORM_MAX_W-PLATFORM_MIN_W));
     let x = prevX + jitter;
     // bias toward center gradually
@@ -164,6 +165,9 @@ const platforms = [];
 /* goal sits above the topmost platform */
 const topP = platforms[platforms.length - 1];
 const goal = { x: topP.x + topP.w/2 - 16, y: topP.y - 86, w:32, h:72 };
+
+/* progress tracking */
+let lastTouchedPlatformIndex = -1; // index of highest platform player has landed on
 
 /* physics */
 const GRAV = 0.7, MOVE = 1.05, JUMP = 13.6;
@@ -202,12 +206,23 @@ function update(){
 
   // platform collision in world coords
   player.onGround = false;
-  for(const p of platforms){
+  for(let i=0;i<platforms.length;i++){
+    const p = platforms[i];
     if(aabb(player.x, player.y, player.w, player.h, p.x, p.y - 6, p.w, p.h + 8)){
       if(player.vy > 0 && (player.y + player.h - player.vy) <= (p.y + p.h + 6)){
         player.y = p.y - player.h;
         player.vy = 0;
         player.onGround = true;
+
+        // progress tracking: if landed on a platform with higher index than before
+        if(i > lastTouchedPlatformIndex){
+          lastTouchedPlatformIndex = i;
+          const progEl = document.getElementById('progress');
+          if(progEl){
+            // show human-friendly number: platform index 0 => 1
+            progEl.textContent = `Tumpuan ${lastTouchedPlatformIndex + 1} / ${PLATFORM_COUNT}`;
+          }
+        }
       }
     }
   }
@@ -232,6 +247,9 @@ function update(){
     player.y = bottom.y - player.h - 6;
     player.vx = player.vy = 0;
     worldOffsetY = 0;
+    lastTouchedPlatformIndex = 0;
+    const progEl = document.getElementById('progress');
+    if(progEl) progEl.textContent = `Tumpuan ${lastTouchedPlatformIndex + 1} / ${PLATFORM_COUNT}`;
   }
 
   // check goal (world coords)
@@ -388,6 +406,11 @@ document.getElementById('startBtn').addEventListener('click', ()=>{
   player.y = bottom.y - player.h - 6;
   player.vx = player.vy = 0;
   worldOffsetY = 0;
+
+  // progress init
+  lastTouchedPlatformIndex = 0;
+  const progEl = document.getElementById('progress');
+  if(progEl) progEl.textContent = `Tumpuan ${lastTouchedPlatformIndex + 1} / ${PLATFORM_COUNT}`;
 
   // apply color shades for platforms
   for(let i=0;i<platforms.length;i++){
