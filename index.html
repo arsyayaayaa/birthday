@@ -144,17 +144,24 @@ const messages = [
 // CREATE GROUND (bawah)
 platforms.push({ x:0, y:3220, w:900, h:48, id:-1, bounce:0, glow:0 });
 
-// GENERATE PLATFORMS: baseY a little above ground
+// GENERATE PLATFORMS: more compact for easier climbing
 let baseY = 2920;
-for(let i = 0; i < platformCount; i++){
+for (let i = 0; i < platformCount; i++) {
   const w = 180;
   const x = 60 + Math.random() * (W - 240);
-  const y = baseY - i * 65 - (Math.random() * 10 - 5);
+  const y = baseY - i * 50 - (Math.random() * 6 - 3);
   platforms.push({ x, y, w, h:18, id:i, bounce:0, glow:0 });
 }
 
-// Pastikan tumpuan pertama tidak terlalu jauh
-platforms[1].y = 3200;
+// Make first platform close to ground (ground is ~3220)
+platforms[1].y = 3150;
+
+// Anti-gap correction (no platform farther than 70px from previous)
+for (let i = 1; i < platforms.length; i++) {
+  if (platforms[i-1].y - platforms[i].y > 70) {
+    platforms[i].y = platforms[i-1].y - 70;
+  }
+}
 
 
 // FLAG
