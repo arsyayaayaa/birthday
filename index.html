@@ -63,68 +63,18 @@
   </div>
 </div>
 
-/* ---------- ENDING ---------- */
-  #ending{position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:24px}
-  .ending-card{
-    width:min(980px, 92vw); max-height:92vh; overflow:auto;
-    background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.03));
-    border:2px solid rgba(255,255,255,.2);
-    border-radius:22px; padding:28px 22px 30px; text-align:center;
-    backdrop-filter: blur(6px);
-    box-shadow: 0 20px 60px rgba(0,0,0,.45);
-  }
-  .big-title{font-size:22px; letter-spacing:1px; margin:6px 0 12px; color:var(--yellow); text-shadow:0 2px 0 #000}
-  .name{font-size:18px; color:var(--pink); margin:0 0 12px}
-  .wish{font-size:12px; line-height:1.9; margin:0 auto 18px; max-width:720px; color:#f2f2f2}
 
-  .photo-gallery{
-    display:flex; flex-wrap:wrap; justify-content:center;
-    gap:12px; margin-top:10px;
-  }
-  .photo-gallery img{
-    width:170px; max-width:44vw; aspect-ratio:3/4; object-fit:cover;
-    image-rendering:auto; border-radius:14px; border:2px solid rgba(255,255,255,.35);
-    box-shadow:0 8px 24px rgba(0,0,0,.35);
-    opacity:0; transform: translateY(18px) scale(.94);
-    animation: photoIn .9s forwards cubic-bezier(.17,.9,.28,1.15);
-  }
-  @keyframes photoIn{
-    to{opacity:1; transform: translateY(0) scale(1);}
-  }
-
-  /* Confetti */
-  .confetti{position:fixed; inset:0; pointer-events:none; overflow:hidden}
-  .confetti span{
-    position:absolute; top:-10vh; width:10px; height:14px; border-radius:3px; opacity:.9;
-    animation: fall var(--dur) linear infinite; transform: rotate(0deg);
-  }
-  @keyframes fall{
-    to{ transform: translateY(110vh) rotate(360deg); }
-  }
-
-  /* Balloons */
-  .balloons{position:fixed; inset:0; pointer-events:none}
-  .balloons .b{
-    position:absolute; bottom:-20vh; width:36px; height:46px; border-radius:50% 50% 48% 52%/60% 60% 40% 40%;
-    background: var(--ball, #ff6ec7); opacity:.85; box-shadow: inset -6px -10px 0 rgba(0,0,0,.15);
-    animation: floatUp var(--bdur) ease-in infinite;
-  }
-  .balloons .b:after{ /* string */
-    content:""; position:absolute; left:50%; transform:translateX(-50%); bottom:-28px; width:2px; height:28px;
-    background: rgba(255,255,255,.5);
-  }
-  @keyframes floatUp{ 
-    0%{ transform: translateY(0) }
-    100%{ transform: translateY(-130vh) }
-  }
-
-  /* small helpers */
-  .hidden{display:none}
-  .cta{margin-top:14px; font-size:11px; color:#ddd}
-  a.btn{
-    display:inline-block; margin-top:10px; padding:10px 12px; font-size:11px;
-    color:#111; background:var(--yellow); border-radius:10px; text-decoration:none
-  }
+<!-- Ending overlay -->
+<div id="endingOverlay">
+  <div class="endingCard">
+    <div class="title">🎉 Happy Birthday Baiq Ila Karunia 🎉</div>
+    <p id="endingText">Semoga sehat, bahagia, dan semakin bersinar. Terima kasih sudah luar biasa!</p>
+    <div class="photoRow" id="photoRow"></div>
+    <div style="margin-top:12px">
+      <a id="replayBtn" class="btn" href="#">Main Lagi</a>
+    </div>
+  </div>
+</div>
 <script>
 /* =========================
    Cute Deluxe — Full Game
@@ -167,7 +117,7 @@ let platforms = [];
 const messages = [
   "Setiap langkah kecilmu berarti ❤️",
   "Kamu makin kuat setiap harinya ✨",
-  "Senyummu itu hadiah untuk dunia 💛",
+  "Senyum dan matamu itu hadiah untuk dunia 💛",
   "Terus naik, jangan menyerah!",
   "Ada banyak hal indah menunggumu 💐",
   "Kamu sudah jauh berkembang 🌱",
