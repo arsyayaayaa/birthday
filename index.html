@@ -1,104 +1,120 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Birthday Climb – Baiq Ila Karunia 🎂</title>
-
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Birthday Climb — Baiq Ila Karunia 🎂</title>
 <style>
-    body{
-        margin:0;
-        background:#121212;
-        overflow:hidden;
-        font-family: 'Verdana';
-    }
-    #hud{
-        position:fixed;
-        top:14px; left:14px;
-        color:white;
-        background:rgba(0,0,0,.35);
-        padding:8px 12px;
-        border-radius:8px;
-        font-size:14px;
-        z-index:10;
-    }
-    #messageBox{
-        position:fixed;
-        left:50%;
-        transform:translateX(-50%);
-        top:20px;
-        background:rgba(0,0,0,.6);
-        color:white;
-        padding:10px 16px;
-        font-size:14px;
-        border-radius:8px;
-        z-index:20;
-        display:none;
-    }
-    canvas{
-        background:linear-gradient(#87CEEB, #8cd88c);
-        display:block;
-        margin:0 auto;
-        border:4px solid #000;
-        image-rendering:pixelated;
-    }
+  :root{
+    --bg1:#87CEEB; --bg2:#9fe7c6;
+    --hud-bg: rgba(0,0,0,.45);
+    --accent: #ff6ec7;
+  }
+  html,body{height:100%; margin:0; background:linear-gradient(var(--bg1),var(--bg2));}
+  body{font-family:Inter, system-ui, Arial, sans-serif; overflow:hidden}
+  #wrap{display:flex; justify-content:center; align-items:flex-start; padding:12px 0;}
+  canvas{background:transparent; border-radius:6px; image-rendering:pixelated; box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  #hud{
+    position:fixed; left:18px; top:18px; z-index:60;
+    background:var(--hud-bg); color:#fff; padding:10px 14px; border-radius:10px;
+    display:flex; gap:12px; align-items:center; font-weight:600;
+  }
+  #messageBox{
+    position:fixed; left:50%; transform:translateX(-50%); top:18px; z-index:70;
+    background:rgba(0,0,0,.55); color:#fff; padding:10px 14px; border-radius:10px; display:none;
+    max-width:640px; text-align:center; font-weight:600; font-size:14px;
+  }
+  #startOverlay{
+    position:fixed; inset:0; z-index:100; display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.2));
+  }
+  .startCard{
+    background:linear-gradient(180deg,#ffffff, #fff1f9);
+    padding:22px; border-radius:12px; width:min(920px,92vw); text-align:center; box-shadow:0 14px 36px rgba(0,0,0,.35);
+  }
+  .btn{
+    display:inline-block; margin-top:12px; background:var(--accent); color:#111; padding:10px 16px; border-radius:10px; font-weight:800; text-decoration:none;
+  }
+  #endingOverlay{position:fixed; inset:0; z-index:120; display:none; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(10,10,20,.6), rgba(0,0,0,.85));}
+  .endingCard{width:min(980px,92vw); background:linear-gradient(180deg,#fffdf8,#fff7fb); border-radius:14px; padding:18px; text-align:center}
+  .photoRow{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:12px}
+  .photoRow img{width:180px; height:240px; object-fit:cover; border-radius:8px; opacity:0; transform:translateY(18px) scale(.98); transition:all .7s cubic-bezier(.16,.9,.28,1.2)}
+  .photoRow img.show{opacity:1; transform:none}
+  .title{font-weight:900; color:#2b2b2b; margin:6px 0; font-size:18px}
+  small{color:#444}
+  @media (max-width:900px){
+    canvas{width:92vw; height:61vw}
+  }
 </style>
 </head>
-
 <body>
 
-<div id="hud">❤️ Journey Level: <span id="lvl">0</span> / 24</div>
+<div id="hud">🎈 Level: <span id="lvl">0</span>/24 &nbsp; • &nbsp; ❤️ Journey</div>
 <div id="messageBox"></div>
 
-<canvas id="game" width="900" height="600"></canvas>
+<div id="wrap"><canvas id="c" width="900" height="600"></canvas></div>
+
+<!-- Start overlay -->
+<div id="startOverlay">
+  <div class="startCard">
+    <h2 style="margin:0 0 8px">Birthday Climb — Baiq Ila Karunia 🎂</h2>
+    <p style="margin:0 0 12px">Selamat datang! Bantu chibi Baiq naik ke puncak — setiap tumpuan beri pesan manis 💕. Gunakan ← → untuk bergerak, Spasi/↑ untuk lompat. Musik mulai saat kamu lompat pertama kali (atau klik Start).</p>
+    <a href="#" id="startBtn" class="btn">Mulai Game</a>
+  </div>
+</div>
+
+<!-- Ending overlay -->
+<div id="endingOverlay">
+  <div class="endingCard">
+    <div class="title">🎉 Happy Birthday Baiq Ila Karunia 🎉</div>
+    <p id="endingText">Semoga sehat, bahagia, dan semakin bersinar. Terima kasih sudah luar biasa!</p>
+    <div class="photoRow" id="photoRow"></div>
+    <div style="margin-top:12px">
+      <a id="replayBtn" class="btn" href="#">Main Lagi</a>
+    </div>
+  </div>
+</div>
 
 <script>
-/* ============ CONFIG ============ */
-const CANVAS = document.getElementById("game");
-const ctx = CANVAS.getContext("2d");
-const W = CANVAS.width, H = CANVAS.height;
+/* =========================
+   Cute Deluxe — Full Game
+   =========================
+   Notes:
+   - Put `music.m4a` in same folder or change path below
+   - Photos for ending: replace names in endingPhotos array if needed
+*/
 
-/* CAMERA OFFSET */
+// CANVAS
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W = canvas.width, H = canvas.height;
+
+// WORLD CAMERA
 let worldOffsetY = 0;
 
-/* PLAYER */
-const player = {
-    x: W/2 - 20,
-    y: 3000,   // starting very low
-    w: 42,
-    h: 42,
-    vx: 0,
-    vy: 0,
-    onGround: false
-};
+// PLAYER
+const player = { x: W/2 - 18, y: 3150, w: 48, h: 56, vx:0, vy:0, onGround:false, facing:1, anim:0, animT:0 };
 
-/* SPRITE (chibi girl) */
-const sprite = new Image();
-sprite.src = "chibi.png"; // GANTI FILEMU
+// CONTROLS
+const keys = { left:false, right:false, up:false };
+window.addEventListener('keydown', e=>{
+  if(e.key==='ArrowLeft') keys.left = true;
+  if(e.key==='ArrowRight') keys.right = true;
+  if(e.key==='ArrowUp' || e.key===' ') { keys.up = true; e.preventDefault(); }
+});
+window.addEventListener('keyup', e=>{
+  if(e.key==='ArrowLeft') keys.left = false;
+  if(e.key==='ArrowRight') keys.right = false;
+  if(e.key==='ArrowUp' || e.key===' ') keys.up = false;
+});
 
-/* PHYSICS */
-const GRAV = 0.55;
-const MOVE = 0.7;
-const JUMP = 12;
+// PHYSICS & CONFIG
+const GRAV = 0.6, MOVE = 0.8, JUMP = 13;
+const platformCount = 24;
 
-/* INPUT */
-let keys = {left:false, right:false, up:false};
-onkeydown=e=>{
-    if(e.key==="ArrowLeft") keys.left=true;
-    if(e.key==="ArrowRight") keys.right=true;
-    if(e.key==="ArrowUp" || e.key===" ") keys.up=true;
-};
-onkeyup=e=>{
-    if(e.key==="ArrowLeft") keys.left=false;
-    if(e.key==="ArrowRight") keys.right=false;
-    if(e.key==="ArrowUp" || e.key===" ") keys.up=false;
-};
-
-/* PLATFORMS (24 LEVEL) */
+// PLATFORM & MESSAGES
 let platforms = [];
-let messages = [];
-
-const messageList = [
+const messages = [
   "Setiap langkah kecilmu berarti ❤️",
   "Kamu makin kuat setiap harinya ✨",
   "Senyummu itu hadiah untuk dunia 💛",
@@ -125,142 +141,628 @@ const messageList = [
   "Selamat! Kamu sampai puncak 🎂"
 ];
 
-/* GENERATE 24 PLATFORMS */
-let baseY = 2800;
-for(let i=0;i<24;i++){
-    let x = 200 + Math.random()*500;
-    let y = baseY - i*110;
+// CREATE GROUND (bawah)
+platforms.push({ x:0, y:3220, w:900, h:48, id:-1, bounce:0, glow:0 });
 
-    platforms.push({x, y, w:180, h:18, id:i});
-    messages.push(messageList[i]);
+// GENERATE PLATFORMS: baseY a little above ground
+let baseY = 2920;
+for(let i=0;i<platformCount;i++){
+  const w = 180;
+  const x = 60 + Math.random()* (W - 240);
+  const y = baseY - i * 110 - (Math.random()*18 - 9);
+  platforms.push({ x, y, w, h:18, id:i, bounce:0, glow:0 });
 }
 
-/* GOAL FLAG (TOP) */
-const flag = {
-    x: W/2 - 25,
-    y: platforms[23].y - 160,
-    w:50, h:160
+// FLAG
+const flag = { x: W/2 - 30, y: platforms[platforms.length-1].y - 160, w:60, h:160 };
+
+// PARALLAX layers (simple)
+const parallax = {
+  layers: [
+    { speed: 0.02, items: [] }, // far mountains
+    { speed: 0.08, items: [] }, // clouds
+    { speed: 0.14, items: [] }  // near clouds
+  ]
+};
+// populate cloud items
+for(let i=0;i<8;i++){
+  parallax.layers[1].items.push({ x: Math.random()*2000-500, y: 60 + Math.random()*120, size: 60 + Math.random()*90 });
+}
+for(let i=0;i<6;i++){
+  parallax.layers[2].items.push({ x: Math.random()*2000-500, y: 30 + Math.random()*80, size: 30 + Math.random()*60 });
+}
+
+// BALLOONS & PETALS
+let balloons = [];
+let petals = [];
+
+// PARTICLES
+let particles = [];
+
+// SOUNDS: WebAudio SFX (pop, ting)
+const AudioCtx = window.AudioContext ? new window.AudioContext() : null;
+function sfxPop(){ if(!AudioCtx) return;
+  const t = AudioCtx.currentTime;
+  const o = AudioCtx.createOscillator(), g = AudioCtx.createGain();
+  o.type='triangle'; o.frequency.setValueAtTime(900, t); o.frequency.exponentialRampToValueAtTime(300, t+0.12);
+  g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.14);
+  o.connect(g); g.connect(AudioCtx.destination); o.start(t); o.stop(t+0.15);
+}
+function sfxTing(){ if(!AudioCtx) return;
+  const t = AudioCtx.currentTime;
+  const o = AudioCtx.createOscillator(), g = AudioCtx.createGain();
+  o.type='sine'; o.frequency.setValueAtTime(1200, t); o.frequency.exponentialRampToValueAtTime(1600, t+0.08);
+  g.gain.setValueAtTime(0.14, t); g.gain.exponentialRampToValueAtTime(0.0001, t+0.2);
+  o.connect(g); g.connect(AudioCtx.destination); o.start(t); o.stop(t+0.22);
+}
+
+// BACKGROUND MUSIC (local file)
+const bgAudio = new Audio('music.m4a'); // <- ganti jika nama file beda
+bgAudio.loop = false;
+bgAudio.volume = 0.5;
+bgAudio.preload = 'auto';
+// when start, we set currentTime to 40 and stop at 70
+let musicActive = false;
+
+// ENDING PHOTOS (replace names if needed)
+const endingPhotos = [
+  "IMG-20241121-WA0001.jpg",
+  "IMG-20241121-WA0000.jpg",
+  "IMG_20250726_100346.jpg",
+  "IMG-20250324-WA0016.jpg",
+  "IMG-20250503-WA0005.jpg"
+];
+
+// HUD & UI
+const lvlEl = document.getElementById('lvl');
+const msgBox = document.getElementById('messageBox');
+const startOverlay = document.getElementById('startOverlay');
+const startBtn = document.getElementById('startBtn');
+const endingOverlay = document.getElementById('endingOverlay');
+const photoRow = document.getElementById('photoRow');
+const replayBtn = document.getElementById('replayBtn');
+
+startBtn.onclick = e=>{
+  e.preventDefault();
+  startOverlay.style.display = 'none';
+  // unlock audio context if needed
+  if(AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume();
 };
 
-/* SOUND: BIRTHDAY SONG (40s → 70s) */
-let bg = new Audio("music.m4a"); 
-bg.volume = 0.5;
+// REPLAY
+replayBtn.onclick = e=>{
+  e.preventDefault();
+  location.reload();
+};
 
-/* ============ FUNCTIONS ============ */
-
-/* DRAW PLAYER */
-function drawPlayer(){
-    let sx = player.x;
-    let sy = player.y - worldOffsetY;
-    ctx.drawImage(sprite, sx, sy, player.w, player.h);
+// HELPER: show message briefly
+let msgTimer = null;
+function showMessage(txt, duration=1400){
+  msgBox.innerText = txt;
+  msgBox.style.display = 'block';
+  clearTimeout(msgTimer);
+  msgTimer = setTimeout(()=> msgBox.style.display = 'none', duration);
 }
 
-/* DRAW PLATFORM */
+// DRAW FUNCTIONS
+function drawParallax(){
+  // far mountains
+  ctx.save();
+  // gradient horizon
+  const g = ctx.createLinearGradient(0, 0,0, H);
+  g.addColorStop(0, '#a0d9ff'); g.addColorStop(1, '#bff1d6');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
+  // clouds layers
+  parallax.layers.forEach((layer, idx)=>{
+    ctx.save();
+    ctx.globalAlpha = 0.85 - idx*0.15;
+    layer.items.forEach(it=>{
+      const px = it.x - worldOffsetY * layer.speed;
+      const py = it.y;
+      drawCloud(px % (W*2) - W/2, py, it.size);
+    });
+    ctx.restore();
+  });
+}
+
+function drawCloud(x,y,size){
+  ctx.save();
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.beginPath();
+  ctx.ellipse(x+size*0.3, y, size*0.6, size*0.4, 0, 0, Math.PI*2);
+  ctx.ellipse(x+size*0.6, y-6, size*0.55, size*0.36, 0,0,Math.PI*2);
+  ctx.ellipse(x+size*0.95, y, size*0.5, size*0.32, 0,0,Math.PI*2);
+  ctx.fill();
+  ctx.restore();
+}
+
+// draw cute ground elements near bottom
+function drawGroundDecor(){
+  const groundY = 3220 - worldOffsetY;
+  if(groundY > H) return;
+  // grass stripe
+  ctx.save();
+  ctx.fillStyle = '#76c85b';
+  ctx.fillRect(0, groundY, W, H - groundY + 80);
+  // flowers
+  for(let i=20;i<W;i+=60){
+    const fx = (i + 30*Math.sin(i*0.12 + worldOffsetY*0.002))|0;
+    const fy = groundY + 10 + Math.sin(i*0.2)*6;
+    drawFlower(fx, fy, ['#ffb6d5','#fff4b3','#ffd7e6'][ (i/60)%3 ]);
+  }
+  ctx.restore();
+}
+function drawFlower(x,y, color){
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.fillStyle = color;
+  for(let i=0;i<5;i++){
+    ctx.beginPath();
+    ctx.ellipse(Math.cos(i/5*Math.PI*2)*6, Math.sin(i/5*Math.PI*2)*6, 5, 8, i/5*Math.PI*2, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.fillStyle = '#fff8';
+  ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+// DRAW PLATFORM (with glow & bounce)
 function drawPlatform(p){
-    let sy = p.y - worldOffsetY;
-    ctx.fillStyle = "#8b4";
-    ctx.fillRect(p.x, sy, p.w, p.h);
+  const sy = p.y - worldOffsetY + (p.bounce || 0);
+  // glow
+  const glow = Math.min(1, Math.abs(p.glow||0));
+  ctx.save();
+  if(glow>0.02){
+    ctx.shadowBlur = 18 * glow;
+    ctx.shadowColor = 'rgba(255,200,220,'+ (0.12*glow) +')';
+  }
+  ctx.fillStyle = '#8bc34a';
+  roundRect(ctx, p.x, sy, p.w, p.h, 6, true, false);
+  ctx.restore();
 }
 
-/* DRAW FLAG */
-function drawFlag(){
-    let sy = flag.y - worldOffsetY;
+// draw small player chibi (hijab simple vector)
+function drawPlayer(){
+  const sx = player.x;
+  const sy = player.y - worldOffsetY;
 
-    ctx.fillStyle="#333";
-    ctx.fillRect(flag.x, sy, flag.w, flag.h);
+  ctx.save();
+  ctx.translate(sx + player.w/2, sy + player.h/2);
 
-    ctx.fillStyle="#ff77aa";
-    ctx.fillRect(flag.x+flag.w, sy+20, 70, 30);
+  // shadow
+  ctx.globalAlpha = 0.15;
+  ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(0, player.h/2 - 6, 22, 8, 0,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // body
+  ctx.fillStyle = '#ffdfe9';
+  roundRect(ctx, -14, -2, 28, 32, 8, true, false);
+
+  // hijab
+  ctx.fillStyle = '#d9a7cf';
+  ctx.beginPath();
+  ctx.moveTo(-26, -28);
+  ctx.quadraticCurveTo(0, -44, 26, -28);
+  ctx.quadraticCurveTo(14, -2, 26, 18);
+  ctx.quadraticCurveTo(0, 28, -26, 18);
+  ctx.closePath(); ctx.fill();
+
+  // face
+  ctx.fillStyle = '#fff1e6';
+  roundRect(ctx, -12, -18, 24, 22, 8, true, false);
+
+  // eyes
+  ctx.fillStyle = '#2b2b2b';
+  ctx.beginPath(); ctx.ellipse(-6, -8, 3.8, 5, 0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(6, -8, 3.8, 5, 0,0,Math.PI*2); ctx.fill();
+
+  // blush
+  ctx.fillStyle = 'rgba(255,120,150,0.18)';
+  ctx.beginPath(); ctx.ellipse(-6, -2, 5, 3, 0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(6, -2, 5, 3, 0,0,Math.PI*2); ctx.fill();
+
+  // simple hair fringe
+  ctx.fillStyle = '#d39ccf';
+  ctx.beginPath(); ctx.moveTo(-10,-20); ctx.quadraticCurveTo(0,-26,10,-20); ctx.lineTo(10,-20); ctx.fill();
+
+  ctx.restore();
 }
 
-/* MESSAGE BOX */
-function showMessage(txt){
-    const box = document.getElementById("messageBox");
-    box.innerText = txt;
-    box.style.display = "block";
-    setTimeout(()=> box.style.display="none", 1500);
+// simple rounded rect helper
+function roundRect(ctx,x,y,w,h,r,fill,stroke){
+  if(typeof r==='undefined') r=6;
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  ctx.closePath();
+  if(fill) ctx.fill();
+  if(stroke) ctx.stroke();
 }
 
-/* UPDATE */
-function update(){
+/* PARTICLES / DUST / SPARKLE */
+function spawnDust(x,y){
+  for(let i=0;i<10;i++){
+    particles.push({
+      x, y,
+      vx: (Math.random()-0.5)*2.8,
+      vy: -Math.random()*2 - 1,
+      life: 800 + Math.random()*300,
+      born: Date.now(),
+      type: 'dust'
+    });
+  }
+}
+function spawnSparkles(x,y){
+  for(let i=0;i<8;i++){
+    particles.push({
+      x, y,
+      vx: (Math.random()-0.5)*2.4,
+      vy: -Math.random()*1.6,
+      life: 900 + Math.random()*600,
+      born: Date.now(),
+      type: 'spark'
+    });
+  }
+}
 
-    /* INPUT MOVE */
-    if(keys.left) player.vx -= MOVE;
-    if(keys.right) player.vx += MOVE;
+/* BALLOONS & PETALS */
+function spawnBalloon(){
+  const side = Math.random() < 0.5 ? -1 : 1;
+  balloons.push({
+    x: side<0 ? -40 : W+40,
+    y: H - 40 + Math.random()*40,
+    vx: side<0 ? 0.6 + Math.random()*0.6 : -0.6 - Math.random()*0.6,
+    vy: -1.2 - Math.random()*0.6,
+    color: ['#ff9ccf','#9ed2ff','#ffe38b'][Math.floor(Math.random()*3)],
+    born: Date.now()
+  });
+}
+function spawnPetals(){
+  for(let i=0;i<12;i++){
+    petals.push({
+      x: Math.random()*W,
+      y: -Math.random()*80,
+      vx: Math.random()*1 - 0.5,
+      vy: 0.4 + Math.random()*1.2,
+      rot: Math.random()*6.28,
+      rSpeed: (Math.random()-0.5)*0.06,
+      color: ['#ffd7ea','#ffdfed','#ffeef2'][Math.floor(Math.random()*3)],
+      born: Date.now()
+    });
+  }
+}
 
-    /* JUMP */
-    if(keys.up && player.onGround){
-        player.vy = -JUMP;
-        player.onGround = false;
+/* UPDATE + COLLISIONS */
+function update(dt){
+  // dt in ms
+  // input
+  if(keys.left) player.vx -= MOVE;
+  if(keys.right) player.vx += MOVE;
 
-        bg.currentTime = 40;
-        bg.play();
-    }
-
-    /* gravity */
-    player.vy += GRAV;
-
-    /* friction */
-    player.vx *= 0.92;
-
-    /* MOVE PLAYER */
-    player.x += player.vx;
-    player.y += player.vy;
-
-    /* COLLISION */
+  // jump
+  if(keys.up && player.onGround){
+    player.vy = -JUMP;
     player.onGround = false;
-    for(let p of platforms){
-        if(player.x < p.x+p.w &&
-           player.x+player.w > p.x &&
-           player.y+player.h > p.y &&
-           player.y+player.h < p.y + p.h + 15 &&
-           player.vy > 0){
-
-            player.y = p.y - player.h;
-            player.vy = 0;
-            player.onGround = true;
-
-            document.getElementById("lvl").innerText = p.id+1;
-
-            showMessage(messages[p.id]);
-        }
+    keys.up = false;
+    // start music at 40s
+    if(!musicActive){
+      try{
+        bgAudio.currentTime = 40;
+      }catch(e){}
+      bgAudio.play().catch(()=>{}); // may be blocked until user interaction
+      musicActive = true;
     }
+    sfxPop();
+  }
 
-    /* CAMERA FOLLOW */
-    const targetScreenY = H * 0.45;
-    const playerScreenY = player.y - worldOffsetY;
+  // physics
+  player.vy += GRAV;
+  player.vx *= 0.92;
 
-    worldOffsetY += (playerScreenY - targetScreenY) * 0.10;
-    if(worldOffsetY < 0) worldOffsetY = 0;
+  player.x += player.vx;
+  player.y += player.vy;
 
-    /* END CONDITION */
-    if(player.x < flag.x+flag.w &&
-       player.x+player.w > flag.x &&
-       player.y < flag.y+flag.h){
+  // world bounds (horizontal)
+  if(player.x < 6) { player.x = 6; player.vx = 0; }
+  if(player.x + player.w > W - 6) { player.x = W - 6 - player.w; player.vx = 0; }
 
-        bg.currentTime = 40;
-        bg.play();
-
-        alert("🎉 Selamat! Kamu mencapai puncak 🎉\nHappy Birthday Baiq Ila Karunia!");
+  // collisions with platforms (simple AABB from top)
+  player.onGround = false;
+  for(let p of platforms){
+    const px = p.x, py = p.y + (p.bounce||0), pw = p.w, ph = p.h;
+    // check only when falling
+    if(player.vy >= 0 &&
+       player.x + player.w > px + 4 &&
+       player.x < px + pw - 4 &&
+       player.y + player.h > py &&
+       player.y + player.h < py + ph + 10){
+         // land
+         player.y = py - player.h;
+         player.vy = 0;
+         player.onGround = true;
+         // bounce animation
+         p.bounce = -6;
+         // glow increase
+         p.glow = 1.0;
+         // spawn dust & particles & sfx & sparkle
+         spawnDust(player.x + player.w/2, player.y + player.h);
+         spawnSparkles(player.x + player.w/2, player.y + player.h - 6);
+         sfxTing();
+         // if platform id >=0 (not ground)
+         if(p.id >= 0){
+           // show message for that id
+           showMessage(messages[p.id]);
+           document.getElementById('lvl').innerText = (p.id + 1);
+         }
     }
+    // decay bounce & glow
+    if(p.bounce){
+      p.bounce += (0 - p.bounce) * 0.18;
+      if(Math.abs(p.bounce) < 0.1) p.bounce = 0;
+    }
+    if(p.glow){
+      p.glow *= 0.92;
+      if(p.glow < 0.01) p.glow = 0;
+    }
+  }
+
+  // camera follow — smooth lerp
+  const targetScreenY = H * 0.45;
+  const playerScreenY = player.y - worldOffsetY;
+  worldOffsetY += (playerScreenY - targetScreenY) * 0.12;
+  if(worldOffsetY < 0) worldOffsetY = 0;
+
+  // particles update
+  const now = Date.now();
+  particles = particles.filter(pt=>{
+    const age = now - pt.born;
+    if(age > pt.life) return false;
+    pt.x += pt.vx;
+    pt.y += pt.vy + (pt.type==='dust'?0.06:0.02);
+    pt.vy += (pt.type==='dust'?0.08:0.02);
+    return true;
+  });
+
+  // balloons update (spawn when near top)
+  if(getCurrentLevel() >= 18){
+    if(Math.random() < 0.02) spawnBalloon();
+  }
+  balloons = balloons.filter(b=>{
+    b.x += b.vx; b.y += b.vy;
+    b.vy -= 0.01; // slight acceleration
+    // remove when off top
+    return b.y > -80 && b.x > -200 && b.x < W + 200;
+  });
+
+  // petals when near top
+  if(getCurrentLevel() >= 20 && Math.random()<0.06) spawnPetals();
+  petals = petals.filter(p=>{
+    p.x += p.vx; p.y += p.vy; p.rot += p.rSpeed;
+    return p.y < H + 120;
+  });
+
+  // check goal (flag)
+  if(player.x < flag.x + flag.w &&
+     player.x + player.w > flag.x &&
+     player.y < flag.y + flag.h){
+       // reached top!
+       reachGoal();
+  }
+
+  // cut music at 70s after starting
+  if(musicActive){
+    try{
+      if(bgAudio.currentTime >= 70) {
+        bgAudio.pause();
+        bgAudio.currentTime = 70;
+      }
+    }catch(e){}
+  }
 }
 
-/* DRAW EVERYTHING */
+// current level (closest platform id landed on)
+function getCurrentLevel(){
+  let best = 0;
+  for(let p of platforms){
+    if(p.id >= 0 && player.y + player.h <= p.y + 6) best = Math.max(best, p.id+1);
+  }
+  return best;
+}
+
+// REACH GOAL
+let finished = false;
+function reachGoal(){
+  if(finished) return;
+  finished = true;
+  // play music portion and maybe fade
+  try{
+    bgAudio.currentTime = 40; bgAudio.play();
+  }catch(e){}
+  // show ending overlay after small delay
+  setTimeout(()=> showEndingSequence(), 800);
+}
+
+// DRAW everything
 function draw(){
-    ctx.clearRect(0,0,W,H);
+  // clear
+  ctx.clearRect(0,0,W,H);
 
-    platforms.forEach(drawPlatform);
-    drawFlag();
-    drawPlayer();
+  // parallax background & clouds (moves with camera but slower)
+  drawParallax();
+
+  // ground decorations
+  drawGroundDecor();
+
+  // platforms
+  for(let p of platforms) drawPlatform(p);
+
+  // particles (dust + sparkles)
+  particles.forEach(pt=>{
+    const age = Date.now() - pt.born;
+    const lifeRatio = 1 - age / pt.life;
+    if(pt.type === 'dust'){
+      ctx.globalAlpha = lifeRatio;
+      ctx.fillStyle = 'rgba(220,200,190,0.95)';
+      ctx.beginPath(); ctx.ellipse(pt.x, pt.y - worldOffsetY, 4, 2.4, 0,0,Math.PI*2); ctx.fill();
+    }else{
+      // spark
+      ctx.globalAlpha = lifeRatio;
+      ctx.fillStyle = 'rgba(255,230,180,'+ (0.9*lifeRatio) +')';
+      ctx.beginPath(); ctx.rect(pt.x-1.5, pt.y - worldOffsetY - 1.5, 3,3); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  });
+
+  // draw balloons (behind player sometimes)
+  balloons.forEach(b=>{
+    ctx.save();
+    ctx.globalAlpha = 0.95;
+    ctx.fillStyle = b.color;
+    ctx.beginPath(); ctx.ellipse(b.x, b.y - worldOffsetY*0.02, 18, 24, 0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#0003'; ctx.fillRect(b.x-1, b.y - worldOffsetY*0.02 + 22, 2, 10);
+    ctx.restore();
+  });
+
+  // petals
+  petals.forEach(p=>{
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.ellipse(0,0,6,10, Math.PI*0.4,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  });
+
+  // player
+  drawPlayer();
+
+  // HUD update (level)
+  lvlEl.innerText = Math.max(0, getCurrentLevel());
+
+  // draw flag (on top)
+  const sy = flag.y - worldOffsetY;
+  ctx.save();
+  ctx.fillStyle = '#333'; ctx.fillRect(flag.x, sy, flag.w, flag.h);
+  ctx.fillStyle = '#ff77aa'; ctx.fillRect(flag.x + flag.w, sy + 20, 76, 34);
+  ctx.restore();
 }
 
-/* GAME LOOP */
-function loop(){
-    update();
-    draw();
-    requestAnimationFrame(loop);
+// GAME LOOP
+let lastT = performance.now();
+function loop(now){
+  const dt = now - lastT;
+  lastT = now;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
 }
-loop();
+requestAnimationFrame(loop);
+
+/* ENDING SEQUENCE */
+function showEndingSequence(){
+  // prepare photos
+  photoRow.innerHTML = '';
+  endingPhotos.forEach(src=>{
+    const img = document.createElement('img');
+    img.src = src;
+    photoRow.appendChild(img);
+  });
+  // reveal overlay
+  endingOverlay.style.display = 'flex';
+  // animate photos in sequence
+  const imgs = Array.from(photoRow.querySelectorAll('img'));
+  imgs.forEach((im, i)=>{
+    setTimeout(()=> im.classList.add('show'), 500 + i*600);
+  });
+  // confetti spawn (simple)
+  spawnConfettiBurst(120);
+}
+
+/* simple confetti */
+function spawnConfettiBurst(n=80){
+  for(let i=0;i<n;i++){
+    particles.push({
+      x: Math.random()*W,
+      y: Math.random()*H*0.5,
+      vx: (Math.random()-0.5)*2,
+      vy: 1 + Math.random()*1.6,
+      life: 1800 + Math.random()*1200,
+      born: Date.now(),
+      type: 'conf'
+    });
+  }
+}
+/* draw confetti as part of particles loop */
+(function extendParticlesDraw(){
+  const old = draw;
+  draw = function(){
+    old();
+    // extra: draw confetti particles if any
+    particles.forEach(pt=>{
+      if(pt.type==='conf'){
+        const age = Date.now() - pt.born; if(age>pt.life) return;
+        ctx.save();
+        ctx.fillStyle = ['#ff9ccf','#ffd27a','#9ed2ff','#c9ffdd'][((pt.x|0)%4)];
+        ctx.fillRect(pt.x - worldOffsetY*0.0001, pt.y - worldOffsetY*0.0, 4, 8);
+        ctx.restore();
+      }
+    });
+  };
+})();
+
+/* UTILITY: responsive canvas */
+function resizeCanvas(){
+  const ratio = 900/600;
+  const maxW = Math.min(window.innerWidth - 40, 1100);
+  const w = Math.min(maxW, 900);
+  const h = Math.round(w / ratio);
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
+/* prevent scroll when using arrow keys on page */
+window.addEventListener('keydown', function(e){
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].indexOf(e.key) > -1) {
+    e.preventDefault();
+  }
+}, false);
+
+/* Graceful: If music can't play due to autoplay, instruct user */
+bgAudio.addEventListener('play', ()=>{ musicActive = true; });
+bgAudio.addEventListener('error', ()=>{ console.warn('Music load error (check music.m4a in folder)'); });
+
+/* small helper: if images missing, show fallback text in ending */
+window.addEventListener('load', ()=>{
+  // check endings images; if not exist, put small fallback
+  endingPhotos.forEach(src=>{
+    const img = new Image();
+    img.src = src;
+    img.onerror = ()=> console.warn('Ending image not found:', src);
+  });
+});
+
+// helper: show initial tips on start overlay click
+canvas.addEventListener('click', ()=>{
+  if(startOverlay.style.display !== 'none') startOverlay.style.display = 'none';
+  if(AudioCtx && AudioCtx.state === 'suspended') AudioCtx.resume();
+});
+
+// helper: stop music at 70s gracefully (also handled in loop)
+bgAudio.addEventListener('timeupdate', ()=>{
+  try{
+    if(bgAudio.currentTime >= 70) { bgAudio.pause(); bgAudio.currentTime = 70; }
+  }catch(e){}
+});
+
 </script>
 </body>
 </html>
