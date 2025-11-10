@@ -146,12 +146,16 @@ platforms.push({ x:0, y:3220, w:900, h:48, id:-1, bounce:0, glow:0 });
 
 // GENERATE PLATFORMS: baseY a little above ground
 let baseY = 2920;
-for(let i=0;i<platformCount;i++){
+for(let i = 0; i < platformCount; i++){
   const w = 180;
-  const x = 60 + Math.random()* (W - 240);
-  const y = baseY - i * 110 - (Math.random()*18 - 9);
+  const x = 60 + Math.random() * (W - 240);
+  const y = baseY - i * 65 - (Math.random() * 10 - 5);
   platforms.push({ x, y, w, h:18, id:i, bounce:0, glow:0 });
 }
+
+// Pastikan tumpuan pertama tidak terlalu jauh
+platforms[1].y = 3100;
+
 
 // FLAG
 const flag = { x: W/2 - 30, y: platforms[platforms.length-1].y - 160, w:60, h:160 };
