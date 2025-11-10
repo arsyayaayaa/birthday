@@ -3,50 +3,47 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Happy Birthday — Baiq Ila Karunia (Climb Edition)</title>
+<title>Happy Birthday — Baiq Ila Karunia (Climb Ladder)</title>
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet"/>
 <style>
 :root{
-  --bg:#0b0b12; --pink:#ff6ec7; --yellow:#ffe066; --white:#fff;
+  --bg:#07111a; --pink:#ff6ec7; --yellow:#ffe066; --white:#fff;
 }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
-  margin:0; font-family:'Press Start 2P',cursive; background:linear-gradient(#0b0b12,#07111a); color:var(--white);
+  margin:0; font-family:'Press Start 2P',cursive; background:linear-gradient(#07111a,#021018); color:var(--white);
   overflow:hidden;
 }
 
 /* Landing */
 #landing {
   position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(180deg, rgba(0,0,0,.6), rgba(0,0,0,.4));
+  background:linear-gradient(180deg, rgba(0,0,0,.6), rgba(0,0,0,.35));
   z-index:9999;
 }
 .landing-card{
   padding:28px; border-radius:14px; text-align:center;
   background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-  border:2px solid rgba(255,255,255,.06);
-  width:min(720px, 92%);
+  border:2px solid rgba(255,255,255,.04);
+  width:min(820px,92%);
 }
 #startBtn{
-  margin-top:14px; padding:12px 16px; border-radius:10px; border:none; cursor:pointer;
+  margin-top:14px; padding:12px 18px; border-radius:10px; border:none; cursor:pointer;
   background:var(--yellow); color:#111; font-family:'Press Start 2P';
 }
 
 /* HUD */
-#hud{position:fixed; left:16px; top:12px; font-size:12px; opacity:.95; z-index:30}
+#hud{position:fixed; left:16px; top:12px; font-size:12px; opacity:.95; z-index:30; display:none;}
 #hud .title{font-size:11px}
 
 /* Game area */
-#gameWrap{display:none; align-items:center; justify-content:center; height:100vh; position:relative; z-index:1}
+#gameWrap{display:none; align-items:center; justify-content:center; height:100vh; position:relative; z-index:1;}
 canvas{image-rendering:pixelated; background: linear-gradient(#87CEEB 60%, #55aa55 60%); border-radius:10px; border:4px solid #111; box-shadow:0 12px 40px rgba(0,0,0,.6);}
 .btnTip{position:fixed; bottom:14px; left:50%; transform:translateX(-50%); font-size:11px; padding:8px 10px; border-radius:8px; background:rgba(0,0,0,.35); display:none; z-index:30}
 
-/* Flag message (not used here, kept for future) */
-#flagMessage { position:absolute; padding:8px 12px; background:rgba(0,0,0,.75); border:2px solid var(--yellow); border-radius:10px; font-size:12px; color:var(--yellow); display:none; transform:translate(-50%,-120%); pointer-events:none; z-index:25 }
-
 /* Ending */
-#ending{position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:24px; z-index:999}
+#ending{position:fixed; inset:0; display:none; align-items:center; justify-content:center; padding:24px; z-index:999;}
 .ending-card{
   width:min(980px,92vw); border-radius:18px; padding:22px; text-align:center;
   background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
@@ -59,13 +56,13 @@ canvas{image-rendering:pixelated; background: linear-gradient(#87CEEB 60%, #55aa
 .photo-gallery img{width:170px; aspect-ratio:3/4; object-fit:cover; border-radius:12px; opacity:0; transform:translateY(18px) scale(.94); animation:photoIn .9s forwards cubic-bezier(.17,.9,.28,1.15);}
 @keyframes photoIn{ to{opacity:1; transform:translateY(0) scale(1);} }
 
-/* Confetti & balloons containers */
+/* confetti / balloons containers */
 .confetti{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:998}
 .balloons{position:fixed; inset:0; pointer-events:none; z-index:997}
 
 /* small responsive tweaks */
-@media(max-width:560px){
-  .photo-gallery img{width:38vw}
+@media(max-width:720px){
+  .photo-gallery img{width:36vw}
 }
 </style>
 </head>
@@ -75,25 +72,26 @@ canvas{image-rendering:pixelated; background: linear-gradient(#87CEEB 60%, #55aa
 <div id="landing">
   <div class="landing-card">
     <div style="font-size:18px;color:var(--yellow)">🎂 Baiq Ila Karunia — Climb Edition</div>
-    <div style="margin-top:8px;color:#ddd;font-size:11px">Naik sampai puncak untuk melihat ucapan ulang tahunnya!</div>
+    <div style="margin-top:8px;color:#ddd;font-size:11px">Naik sampai puncak (24 tumpuan) untuk melihat ucapan ulang tahunnya!</div>
     <button id="startBtn">Mulai Game</button>
   </div>
 </div>
 
 <!-- HUD -->
-<div id="hud" style="display:none">
+<div id="hud" aria-hidden="true">
   <div class="title">Naik sampai puncak!</div>
 </div>
 
 <!-- Game -->
 <div id="gameWrap">
-  <canvas id="gameCanvas" width="960" height="540"></canvas>
-  <div id="flagMessage">Kumpulkan semua koin dulu!</div>
+  <canvas id="gameCanvas" width="1366" height="768"></canvas>
+  <!-- optional small message placeholder (not used for win condition) -->
+  <div id="flagMessage" style="display:none;position:absolute;"></div>
 </div>
 <div class="btnTip">Controls: ← → untuk bergerak • Spasi/↑ untuk lompat</div>
 
 <!-- Ending -->
-<div id="ending">
+<div id="ending" role="dialog" aria-modal="true">
   <div class="ending-card">
     <div class="big-title">🎉 Selamat Ulang Tahun 🎉</div>
     <div class="name">Baiq Ila Karunia</div>
@@ -112,58 +110,65 @@ canvas{image-rendering:pixelated; background: linear-gradient(#87CEEB 60%, #55aa
   <div class="balloons" id="balloons"></div>
 </div>
 
-<!-- Audio (file di root) -->
+<!-- Audio (file must exist in repo root) -->
 <audio id="endingAudio" src="Sal_Priadi_-_Serta_Mulia__Official_Lyric_Video_(128k).m4a" preload="auto"></audio>
 
 <script>
-/* ---------- Game: vertical climb (random-smooth) ---------- */
+/* ---------- Config ---------- */
+const CANVAS_W = 1366, CANVAS_H = 768;
+const PLATFORM_COUNT = 24;
+const STEP_Y = 64; // vertical gap between platforms
+const PLATFORM_MIN_W = 100, PLATFORM_MAX_W = 180;
+
+/* ---------- Setup ---------- */
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const W = canvas.width, H = canvas.height;
+canvas.width = CANVAS_W; canvas.height = CANVAS_H;
 
-// player
-const player = { x: W/2 - 14, y: H - 90, w:28, h:34, vx:0, vy:0, onGround:false };
+let running = false;
 const keys = { left:false, right:false, up:false };
 
-// physics
-const GRAV = 0.6, MOVE = 0.95, JUMP = 12.6;
+/* Player (world coordinates) */
+const player = { x:0, y:0, w:28, h:34, vx:0, vy:0, onGround:false };
 
-// camera offset (we'll move cameraY so player climbs up)
-let camX = 0, camY = 0;
-let running = false;
+/* World / camera */
+let worldOffsetY = 0; // how much world scrolled up (in px)
+function worldToScreenY(worldY){
+  // show player near bottom region: base + offset
+  return worldY - worldOffsetY + (CANVAS_H - 160);
+}
 
-// generate 24 platforms that go upwards with smooth randomness
-const PLATFORM_COUNT = 24;
+/* Generate ladder-style platforms (random-smooth) */
 const platforms = [];
 (function genPlatforms(){
-  // starting baseline (y in world coordinates), world y increases downward.
-  // We'll place bottom platform near player start, then create earlier (higher) platforms with decreasing y.
-  const baseY = 0; // we'll treat world coordinate where player start at worldY = 0
-  const stepY = 55; // vertical gap between platforms
-  const centerX = W/2;
-  let prevX = centerX;
+  const centerX = CANVAS_W/2;
+  let prevX = centerX - 70;
+  // bottommost platform baseline (world y=0 for starting area)
+  const bottomY = 0;
   for(let i=0;i<PLATFORM_COUNT;i++){
-    // place from bottom to top: idx 0 is base, last is top
+    // each platform higher than previous
     const idx = i;
-    // make smoother horizontal variation: small random offset + trend toward center
-    const jitter = (Math.random() - 0.5) * 220; // horizontal jitter
-    // bias to center a bit for playability
-    let x = prevX + jitter*0.6;
-    // clamp inside safe bounds
-    x = Math.max(40, Math.min(W-160, x));
-    const y = H - 120 - idx * stepY; // world y relative to starting screen (negative upward)
-    const w = 140;
-    platforms.push({ x, y, w, h:18, ix: x, iy: y }); // keep ix,iy as initial positions for reference
+    // smooth random: small jitter added to prevX, bias toward center
+    const jitter = (Math.random() - 0.5) * 240 * (0.7); // reduce extremes
+    let w = Math.round(PLATFORM_MIN_W + Math.random()*(PLATFORM_MAX_W-PLATFORM_MIN_W));
+    let x = prevX + jitter;
+    // bias toward center gradually
+    x += (CANVAS_W/2 - x) * 0.08;
+    x = Math.max(20, Math.min(CANVAS_W - w - 20, x));
+    const y = bottomY - idx * STEP_Y; // upward negative world coords
+    platforms.push({ x, y, w, h:18 });
     prevX = x;
   }
-  // Reverse order so index 0 is bottommost as created; top is last element
 })();
 
-// goal flag sits slightly above topmost platform
-const topPlatform = platforms[platforms.length - 1];
-const goal = { x: topPlatform.x + topPlatform.w/2 - 12, y: topPlatform.y - 90, w:24, h:64 };
+/* goal sits above the topmost platform */
+const topP = platforms[platforms.length - 1];
+const goal = { x: topP.x + topP.w/2 - 16, y: topP.y - 86, w:32, h:72 };
 
-// input
+/* physics */
+const GRAV = 0.7, MOVE = 1.05, JUMP = 13.6;
+
+/* input */
 addEventListener('keydown', e=>{
   if(e.key === 'ArrowLeft' || e.key === 'a') keys.left = true;
   if(e.key === 'ArrowRight' || e.key === 'd') keys.right = true;
@@ -175,121 +180,105 @@ addEventListener('keyup', e=>{
   if(e.key === 'ArrowUp' || e.key === 'w' || e.key === ' ') keys.up = false;
 });
 
-// helpers
+/* helpers */
 function aabb(ax,ay,aw,ah, bx,by,bw,bh){
   return ax < bx + bw && ax + aw > bx && ay < by + bh && ay + ah > by;
 }
 
-// camera follow: we map world coords so that initial player y (H - 90) is worldY = 0.
-// We'll store all object positions in "world" coordinates relative to start; camera converts to screen.
-let worldOffsetY = 0; // world to screen: screenY = worldY - worldOffsetY + screenBase
-
-function worldToScreenY(worldY){
-  // show player near bottom third of screen while climbing; cameraOffset increases as player climbs
-  return worldY - worldOffsetY + (H - 160);
-}
-
-// update & physics
+/* update */
 function update(){
-  // horizontal movement
+  // movement
   if(keys.left) player.vx -= MOVE;
   if(keys.right) player.vx += MOVE;
-  // jump
+  // jump only if on ground
   if(keys.up && player.onGround){
-    player.vy = -JUMP; player.onGround = false;
-    keys.up = false; // require button press per jump
+    player.vy = -JUMP; player.onGround = false; keys.up = false;
   }
-  // apply gravity & friction
+
   player.vy += GRAV;
   player.vx *= 0.88;
-
-  // simple world-based movement: player has worldY, but we store y as worldY (relative)
   player.x += player.vx;
   player.y += player.vy;
 
-  // collisions with platforms (in world space)
+  // platform collision in world coords
   player.onGround = false;
   for(const p of platforms){
-    const py = p.y;
-    const px = p.x;
-    if(aabb(player.x, player.y, player.w, player.h, px, py - 2, p.w, p.h + 4)){
-      // landed on top
-      if(player.vy > 0){
-        player.y = py - player.h;
+    if(aabb(player.x, player.y, player.w, player.h, p.x, p.y - 6, p.w, p.h + 8)){
+      if(player.vy > 0 && (player.y + player.h - player.vy) <= (p.y + p.h + 6)){
+        player.y = p.y - player.h;
         player.vy = 0;
         player.onGround = true;
       }
     }
   }
 
-  // ground boundary (can't fall below starting area)
-  const lowest = platforms[0];
-  if(player.y > lowest.y + 400){ // if fell too far, reset near bottom
-    player.x = W/2 - 14;
-    player.y = H - 160;
-    player.vx = player.vy = 0;
-  }
+  // keep player within horizontal bounds
+  if(player.x < 8) { player.x = 8; player.vx = 0; }
+  if(player.x + player.w > CANVAS_W - 8) { player.x = CANVAS_W - 8 - player.w; player.vx = 0; }
 
-  // camera/worldOffset: keep player climbing upwards by increasing worldOffsetY when player rises above a threshold
+  // camera follow upward: move worldOffsetY so player tends to stay near 35% from top when climbing
   const playerScreenY = worldToScreenY(player.y);
-  if(playerScreenY < H * 0.35){
-    // move world offset up so player comes down on screen (effect: camera follows upward)
-    worldOffsetY -= (H * 0.35 - playerScreenY) * 0.12;
-  } else if(playerScreenY > H * 0.7){
-    worldOffsetY += (playerScreenY - H * 0.7) * 0.06;
+  if(playerScreenY < CANVAS_H * 0.35){
+    worldOffsetY -= (CANVAS_H * 0.35 - playerScreenY) * 0.14;
+  } else if(playerScreenY > CANVAS_H * 0.75) {
+    worldOffsetY += (playerScreenY - CANVAS_H * 0.75) * 0.06;
   }
-
-  // clamp worldOffsetY so it doesn't go below 0 (start)
   worldOffsetY = Math.max(0, worldOffsetY);
 
-  // check reaching goal (goal is in world coords)
+  // if player falls too far below bottommost platform, reset near start
+  const bottom = platforms[0];
+  if(player.y > bottom.y + 420){
+    player.x = bottom.x + bottom.w/2 - player.w/2;
+    player.y = bottom.y - player.h - 6;
+    player.vx = player.vy = 0;
+    worldOffsetY = 0;
+  }
+
+  // check goal (world coords)
   if(aabb(player.x, player.y, player.w, player.h, goal.x, goal.y, goal.w, goal.h)){
     // reached top -> show ending
     running = false;
-    setTimeout(showEnding, 250);
+    setTimeout(showEnding, 300);
   }
-
-  // horizontal bounds
-  if(player.x < 8) player.x = 8;
-  if(player.x + player.w > W - 8) player.x = W - 8 - player.w;
 }
 
-// rendering
+/* render */
 function render(){
   // clear
-  ctx.clearRect(0,0,W,H);
+  ctx.clearRect(0,0, CANVAS_W, CANVAS_H);
 
-  // sky & bg accents
-  // (already handled by canvas background style)
+  // sky stripe / decorative
+  ctx.fillStyle = '#87CEEB';
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H * 0.6);
 
-  // draw platforms (convert world->screen)
+  // draw platforms
   for(const p of platforms){
     const sx = p.x;
     const sy = worldToScreenY(p.y);
-    // platform shadow
-    ctx.fillStyle = '#283a2c';
+    // drop shadow
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
     ctx.fillRect(sx - 6, sy + 6, p.w + 12, p.h);
     // platform
     ctx.fillStyle = p.color || '#ffd8aa';
     ctx.fillRect(sx, sy, p.w, p.h);
   }
 
-  // draw goal flag at top
-  const gx = goal.x; const gy = worldToScreenY(goal.y);
+  // draw goal flag (world->screen)
+  const gx = goal.x, gy = worldToScreenY(goal.y);
   // pole
   ctx.fillStyle = '#333';
-  ctx.fillRect(gx + goal.w/2 - 2, gy, 4, goal.h);
+  ctx.fillRect(gx + goal.w/2 - 3, gy, 6, goal.h);
   // flag cloth
   ctx.fillStyle = '#ff6ec7';
   ctx.beginPath();
-  ctx.moveTo(gx + goal.w/2 + 2, gy + 8);
-  ctx.lineTo(gx + goal.w/2 + 56, gy + 22);
-  ctx.lineTo(gx + goal.w/2 + 2, gy + 36);
-  ctx.closePath(); ctx.fill();
+  ctx.moveTo(gx + goal.w/2 + 3, gy + 8);
+  ctx.lineTo(gx + goal.w/2 + 64, gy + 22);
+  ctx.lineTo(gx + goal.w/2 + 3, gy + 36);
+  ctx.closePath();
+  ctx.fill();
 
-  // draw player (simple square)
-  const px = player.x;
-  const py = worldToScreenY(player.y);
+  // draw player
+  const px = player.x, py = worldToScreenY(player.y);
   ctx.fillStyle = '#ff4d4d';
   ctx.fillRect(px, py, player.w, player.h);
   // eyes
@@ -297,20 +286,20 @@ function render(){
   ctx.fillRect(px + 6, py + 8, 6, 6);
   ctx.fillRect(px + 16, py + 8, 6, 6);
 
-  // HUD text (drawn on canvas optional)
+  // HUD text drawing (redundant with DOM HUD)
   ctx.fillStyle = '#000';
-  ctx.font = "11px 'Press Start 2P'";
-  ctx.fillText("Naik sampai puncak!", 18, 20);
+  ctx.font = "12px 'Press Start 2P'";
+  ctx.fillText("Naik sampai puncak!", 18, 22);
 }
 
-// game loop
+/* loop */
 function loop(){
   if(!running) return;
   update(); render();
   requestAnimationFrame(loop);
 }
 
-/* ---------- Ending & visuals ---------- */
+/* ---------- Ending & Visuals ---------- */
 const endingEl = document.getElementById('ending');
 const confettiWrap = document.getElementById('confetti');
 const balloonsWrap = document.getElementById('balloons');
@@ -326,28 +315,27 @@ function showEnding(){
   // show ending card
   endingEl.style.display = 'flex';
   // spawn confetti & balloons
-  confettiBurst(120);
-  floatBalloons(10);
+  confettiBurst(140);
+  floatBalloons(8);
 
-  // play audio starting at 40s and stop at 70s
+  // play audio from 40s to 70s
   try{
     endingAudio.currentTime = 40;
     endingAudio.volume = 0.85;
-    endingAudio.play().catch(()=>{/* if browser blocks, user has interacted via Start so usually ok */});
+    endingAudio.play().catch(()=>{ /* if blocked */ });
     const stopAt = 70;
     function checkTime(){ if(endingAudio.currentTime >= stopAt){ endingAudio.pause(); endingAudio.removeEventListener('timeupdate', checkTime); } }
     endingAudio.addEventListener('timeupdate', checkTime);
   }catch(e){ console.log('audio err', e); }
 
-  // show photos one-by-one (CSS animation delays already set in HTML)
+  // reveal photos one by one
   photoImgs.forEach((img, i)=>{
-    // trigger reflow then allow CSS animation to run
-    setTimeout(()=> img.style.opacity = '1', 150 + i*500);
+    setTimeout(()=> img.style.opacity = '1', 240 + i * 520);
   });
 }
 
 /* confetti */
-function confettiBurst(n=80){
+function confettiBurst(n=100){
   const colors = ['#ff6ec7','#6ecbff','#ffe066','#7CFF6E','#ffffff'];
   for(let i=0;i<n;i++){
     const el = document.createElement('span');
@@ -381,40 +369,41 @@ function floatBalloons(n=6){
     el.style.background = colors[i % colors.length];
     el.style.opacity = '0.95';
     balloonsWrap.appendChild(el);
-    // animate
     setTimeout(()=>{ el.style.transition = 'transform 10s linear, bottom 10s linear'; el.style.transform = `translateY(-120vh)`; el.style.bottom = '120vh'; }, 40);
     setTimeout(()=> el.remove(), 11500);
   }
 }
 
-/* ---------- Start controls (Landing) ---------- */
+/* ---------- Start (Landing) ---------- */
 document.getElementById('startBtn').addEventListener('click', ()=>{
-  // hide landing, show game
+  // hide landing, show game UI
   document.getElementById('landing').style.display = 'none';
   document.getElementById('gameWrap').style.display = 'flex';
   document.querySelector('.btnTip').style.display = 'block';
   document.getElementById('hud').style.display = 'block';
 
-  // initialize player world position relative: we will treat initial world y coords for platforms and player
-  // Place player near bottom-most platform:
-  player.x = platforms[0].x + platforms[0].w/2 - player.w/2;
-  player.y = platforms[0].y - player.h - 4;
-
-  // reset offsets
+  // position player on bottom-most platform
+  const bottom = platforms[0];
+  player.x = bottom.x + bottom.w/2 - player.w/2;
+  player.y = bottom.y - player.h - 6;
+  player.vx = player.vy = 0;
   worldOffsetY = 0;
+
+  // apply color shades for platforms
+  for(let i=0;i<platforms.length;i++){
+    platforms[i].color = ['#ffd8aa','#c6f1ff','#fff0a8','#c6ffd1','#ffdada','#d6eaff'][i % 6];
+  }
+
   running = true;
   loop();
+
+  // small safety: resume audio context in some mobile browsers (not required here but helpful)
+  try{ if(window.AudioContext && !window.audioCtxResumed){ const ac = new (window.AudioContext || window.webkitAudioContext)(); ac.resume(); window.audioCtxResumed = true; } }catch(e){}
 });
 
-/* Prevent audio autoplay issues: user clicked Start, so play later is allowed */
-/* ---------- Utility init: attach platform colors for visuals ---------- */
-for(let i=0;i<platforms.length;i++){
-  const shade = ['#ffd8aa','#c6f1ff','#fff0a8','#c6ffd1','#ffdada','#d6eaff'][i % 6];
-  platforms[i].color = shade;
-}
-
-/* small initial render while landed */
+/* initial render */
 render();
 </script>
+
 </body>
 </html>
