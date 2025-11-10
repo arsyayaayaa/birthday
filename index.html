@@ -74,7 +74,7 @@ const player = {
 
 /* SPRITE (chibi girl) */
 const sprite = new Image();
-sprite.src = "chibi.png"; // GANTI sesuai nama gambarmu
+sprite.src = "chibi.png"; // GANTI FILEMU
 
 /* PHYSICS */
 const GRAV = 0.55;
@@ -94,7 +94,7 @@ onkeyup=e=>{
     if(e.key==="ArrowUp" || e.key===" ") keys.up=false;
 };
 
-/* PLATFORMS (24 LEVEL) — AUTO GENERATED */
+/* PLATFORMS (24 LEVEL) */
 let platforms = [];
 let messages = [];
 
@@ -143,35 +143,32 @@ const flag = {
 };
 
 /* SOUND: BIRTHDAY SONG (40s → 70s) */
-let bg = new Audio("music.m4a"); // GANTI nama file lagu
+let bg = new Audio("music.m4a"); 
 bg.volume = 0.5;
-bg.currentTime = 40;
 
 /* ============ FUNCTIONS ============ */
 
-function worldToScreenY(y){
-    return y - worldOffsetY;
-}
-
 /* DRAW PLAYER */
 function drawPlayer(){
-    let sy = worldToScreenY(player.y);
-    ctx.drawImage(sprite, player.x, sy, player.w, player.h);
+    let sx = player.x;
+    let sy = player.y - worldOffsetY;
+    ctx.drawImage(sprite, sx, sy, player.w, player.h);
 }
 
 /* DRAW PLATFORM */
 function drawPlatform(p){
+    let sy = p.y - worldOffsetY;
     ctx.fillStyle = "#8b4";
-    ctx.fillRect(p.x, worldToScreenY(p.y), p.w, p.h);
+    ctx.fillRect(p.x, sy, p.w, p.h);
 }
 
 /* DRAW FLAG */
 function drawFlag(){
-    let sy = worldToScreenY(flag.y);
+    let sy = flag.y - worldOffsetY;
+
     ctx.fillStyle="#333";
     ctx.fillRect(flag.x, sy, flag.w, flag.h);
 
-    // cloth
     ctx.fillStyle="#ff77aa";
     ctx.fillRect(flag.x+flag.w, sy+20, 70, 30);
 }
@@ -181,7 +178,7 @@ function showMessage(txt){
     const box = document.getElementById("messageBox");
     box.innerText = txt;
     box.style.display = "block";
-    setTimeout(()=> box.style.display="none", 1600);
+    setTimeout(()=> box.style.display="none", 1500);
 }
 
 /* UPDATE */
@@ -195,7 +192,9 @@ function update(){
     if(keys.up && player.onGround){
         player.vy = -JUMP;
         player.onGround = false;
-        bg.play(); // start music automatically
+
+        bg.currentTime = 40;
+        bg.play();
     }
 
     /* gravity */
@@ -227,12 +226,11 @@ function update(){
         }
     }
 
-    /* CAMERA FOLLOW FIX */
-    const targetY = H * 0.45;
-    const screenY = worldToScreenY(player.y);
-    const diff = screenY - targetY;
+    /* CAMERA FOLLOW */
+    const targetScreenY = H * 0.45;
+    const playerScreenY = player.y - worldOffsetY;
 
-    worldOffsetY += diff * 0.18;
+    worldOffsetY += (playerScreenY - targetScreenY) * 0.10;
     if(worldOffsetY < 0) worldOffsetY = 0;
 
     /* END CONDITION */
