@@ -1,672 +1,227 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
+
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Birthday Climb — Baiq Ila Karunia 🎂</title>
 
-<style>
-  :root{
-    --bg1:#87CEEB; 
-    --bg2:#9fe7c6;
-    --hud-bg: rgba(0,0,0,.45);
-    --accent: #ff6ec7;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
 
-  html,body{
-    height:100%; 
-    margin:0; 
-    background:linear-gradient(var(--bg1),var(--bg2));
-  }
-  body{
-    font-family:Inter, system-ui, Arial, sans-serif; 
-    overflow:hidden
-  }
+    <title>Happy Birthday ❤️</title>
 
-  #wrap{
-    display:flex; 
-    justify-content:center; 
-    align-items:flex-start; 
-    padding:12px 0;
-  }
+    <!-- Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
 
-  canvas{
-    background:transparent; 
-    border-radius:6px; 
-    image-rendering:pixelated; 
-    box-shadow:0 18px 40px rgba(0,0,0,.45)
-  }
+    <link rel="preconnect"
+          href="https://fonts.gstatic.com"
+          crossorigin>
 
-  /* HUD */
-  #hud{
-    position:fixed; 
-    left:18px; 
-    top:18px; 
-    z-index:60;
-    background:var(--hud-bg); 
-    color:#fff; 
-    padding:10px 14px; 
-    border-radius:10px;
-    display:flex; 
-    gap:12px; 
-    align-items:center; 
-    font-weight:600;
-  }
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Great+Vibes&family=Poppins:wght@300;400;500;600&display=swap"
+          rel="stylesheet">
 
-  /* Message box */
-  #messageBox{
-    position:fixed; 
-    left:50%; 
-    transform:translateX(-50%); 
-    top:18px; 
-    z-index:70;
-    background:rgba(0,0,0,.55); 
-    color:#fff; 
-    padding:10px 14px; 
-    border-radius:10px;
-    max-width:640px; 
-    text-align:center; 
-    font-weight:600; 
-    font-size:14px;
-    display:none;
-  }
+    <link rel="stylesheet"
+          href="style.css">
 
-  /* Start overlay */
-  #startOverlay{
-    position:fixed; 
-    inset:0; 
-    z-index:100; 
-    display:flex; 
-    align-items:center; 
-    justify-content:center;
-    background:linear-gradient(rgba(0,0,0,.45), rgba(0,0,0,.2));
-  }
-
-  .startCard{
-    background:linear-gradient(180deg,#ffffff, #fff1f9);
-    padding:22px; 
-    border-radius:12px; 
-    width:min(920px,92vw); 
-    text-align:center; 
-    box-shadow:0 14px 36px rgba(0,0,0,.35);
-  }
-
-  .btn{
-    display:inline-block; 
-    margin-top:12px; 
-    background:var(--accent); 
-    color:#111; 
-    padding:10px 16px;
-    border-radius:10px; 
-    font-weight:800; 
-    text-decoration:none;
-  }
-
-  /* Ending overlay */
-  #endingOverlay{
-    position:fixed; 
-    inset:0; 
-    z-index:120; 
-    display:none; 
-    align-items:center; 
-    justify-content:center;
-    background:linear-gradient(180deg, rgba(10,10,20,.6), rgba(0,0,0,.85));
-  }
-
-  .endingCard{
-    width:min(980px,92vw); 
-    background:linear-gradient(180deg,#fffdf8,#fff7fb);
-    border-radius:14px; 
-    padding:18px; 
-    text-align:center
-  }
-
-  .title{
-    font-weight:900; 
-    color:#2b2b2b; 
-    margin:6px 0; 
-    font-size:18px
-  }
-
-  .photoRow{
-    display:flex; 
-    gap:10px; 
-    flex-wrap:wrap; 
-    justify-content:center; 
-    margin-top:12px
-  }
-
-  .photoRow img{
-    width:180px; 
-    height:240px; 
-    object-fit:cover; 
-    border-radius:8px;
-    opacity:0; 
-    transform:translateY(18px) scale(.98); 
-    transition:all .7s cubic-bezier(.16,.9,.28,1.2)
-  }
-  .photoRow img.show{
-    opacity:1; 
-    transform:none;
-  }
-
-  @media (max-width:900px){
-    canvas{ width:92vw; height:61vw; }
-  }
-</style>
 </head>
 
 <body>
 
-<div id="hud">🎈 Level: <span id="lvl">0</span>/24 &nbsp; • &nbsp; ❤️ Journey</div>
-<div id="messageBox"></div>
+<!-- Sakura -->
+<div class="flowers"></div>
 
-<div id="wrap">
-  <canvas id="c" width="900" height="600"></canvas>
-</div>
+<!-- Musik -->
+<audio id="bgMusic" loop>
+    <source src="assets/music/birthday.mp3" type="audio/mp3">
+</audio>
 
-<!-- Start overlay -->
-<div id="startOverlay">
-  <div class="startCard">
-    <h2 style="margin:0 0 8px">Birthday Climb — Baiq Ila Karunia 🎂</h2>
-    <p style="margin:0 0 12px">
-      Selamat datang! Bantu Bq naik ke puncak yaaa — setiap pijakan punya pesan manis 💕.<br>
-      Gunakan ← → untuk bergerak, Spasi/↑ untuk lompat.
-    </p>
-    <a href="#" id="startBtn" class="btn">Mulai Game</a>
-  </div>
-</div>
+<!-- ================= PAGE 1 ================= -->
 
-<!-- Ending overlay -->
-<div id="endingOverlay">
-  <div class="endingCard">
-    <div class="title">🎉 Happy Birthday Baiq Ila Karunia 🎉</div>
-    <p id="endingText">
-      Honestly gatau mau ucapin apa, tapi aku coba aja yaa wkwkwkk. Happy Birthday to the one whose eyes are the most beautiful in all the universes. May your year be as bright and beautiful
-as the sparkle in your eyes. Thanks a lot udah mau temenan!. See you soon(?) wkwkwkwk
-    </p>
-    <div class="photoRow" id="photoRow"></div>
+<section class="page hero" id="hero">
 
-    <div style="margin-top:18px">
-      <a href="#" id="replayBtn" class="btn">Main Lagi</a>
+    <div class="glass">
+
+        <h3>A Little Gift</h3>
+
+        <h1>for You</h1>
+
+        <p>
+            made with love ♡
+        </p>
+
+        <button id="startBtn">
+
+            Open
+
+        </button>
+
     </div>
-  </div>
-</div>
-<script>
-/* =========================
-   Cute Deluxe Birthday Game
-   Version FINAL — Bagian 2
-   ========================= */
-
-const canvas = document.getElementById('c');
-const ctx = canvas.getContext('2d');
-let W = canvas.width, H = canvas.height;
-
-// CAMERA
-let worldOffsetY = 0;
-
-// PLAYER
-const player = {
-  x: W/2 - 18,
-  y: 3150,
-  w: 48,
-  h: 56,
-  vx: 0,
-  vy: 0,
-  onGround: false
-};
-
-// INPUT
-const keys = { left:false, right:false, up:false };
-window.addEventListener("keydown", e=>{
-    if(e.key==="ArrowLeft") keys.left=true;
-    if(e.key==="ArrowRight") keys.right=true;
-    if(e.key==="ArrowUp" || e.key===" ") {
-        keys.up=true; e.preventDefault();
-    }
-});
-window.addEventListener("keyup", e=>{
-    if(e.key==="ArrowLeft") keys.left=false;
-    if(e.key==="ArrowRight") keys.right=false;
-    if(e.key==="ArrowUp" || e.key===" ") keys.up=false;
-});
-
-// PHYSICS
-const GRAV = 0.6;
-const MOVE = 0.8;
-const JUMP = 13;
-
-// PLATFORMS
-let platforms = [];
-const platformCount = 24;
-
-// PLATFORM MESSAGES
-const messages = [
-  "Setiap langkah kecilmu berarti ❤️",
-  "Kamu makin kuat setiap harinya ✨",
-  "Senyummu itu hadiah untuk dunia 💛",
-  "Terus naik, jangan menyerah!",
-  "Ada banyak hal indah menunggumu 💐",
-  "Kamu sudah jauh berkembang 🌱",
-  "Makin tinggi, makin hebat!",
-  "Perjalanan ini milikmu sendiri 💖",
-  "Tetap lembut, tapi kuat 💫",
-  "Bahagiamu itu penting 💕",
-  "Nikmati prosesnya ya!",
-  "Pelan-pelan tapi pasti 🌟",
-  "Kamu pantas dirayakan 🎉",
-  "Dunia beruntung punya kamu 💞",
-  "Hidupmu itu berharga ✨",
-  "Tetap percaya diri ya!",
-  "Kamu sudah hebat sampai sini ❤️",
-  "Semoga hari-harimu makin indah 🌸",
-  "Yang baik selalu datang padamu ✨",
-  "Semesta sayang sama kamu 💫",
-  "Terima kasih sudah bertahan 💖",
-  "Ayo sedikit lagi! 💛",
-  "Satu langkah terakhir!",
-  "Selamat! Kamu sampai puncak 🎂"
-];
-
-// GROUND
-platforms.push({ x:0, y:3220, w:900, h:48, id:-1 });
-
-// GENERATE PLATFORM
-let baseY = 2920;
-for(let i=0; i<platformCount; i++){
-    const x = 60 + Math.random()*(W-240);
-    let y = baseY - i*50 - (Math.random()*6 - 3);
-    platforms.push({ x, y, w:180, h:18, id:i, bounce:0, glow:0 });
-}
-
-// FIRST PLATFORM CLOSE
-platforms[1].y = 3150;
-
-// AVOID GAP > 70 px
-for(let i=1; i<platforms.length; i++){
-    if(platforms[i-1].y - platforms[i].y > 70){
-        platforms[i].y = platforms[i-1].y - 70;
-    }
-}
-
-// FLAG
-const flag = {
-  x: W/2-30,
-  y: platforms[platforms.length-1].y - 160,
-  w: 60,
-  h: 160
-};
-
-// UI
-const lvlEl = document.getElementById("lvl");
-const msgBox = document.getElementById("messageBox");
-const startOverlay = document.getElementById("startOverlay");
-const endingOverlay = document.getElementById("endingOverlay");
-const photoRow = document.getElementById("photoRow");
-
-// MUSIC
-const bgAudio = new Audio("Nadin_Amizah_-_Semua_Aku_Dirayakan__Official_Lyric_Video_(256k).mp3");
-bgAudio.volume = 0.5;
-bgAudio.loop = false;
-let musicStarted = false;
-
-// START BTN
-document.getElementById("startBtn").onclick = e=>{
-  e.preventDefault();
-  startOverlay.style.display = "none";
-};
-
-// ========== HELPER FUNCTIONS ==========
-
-function showMessage(text){
-    msgBox.innerText = text;
-    msgBox.style.display = "block";
-    setTimeout(()=> msgBox.style.display="none", 1500);
-}
-
-function roundRect(ctx,x,y,w,h,r,fill){
-  ctx.beginPath();
-  ctx.moveTo(x+r,y);
-  ctx.arcTo(x+w,y,x+w,y+h,r);
-  ctx.arcTo(x+w,y+h,x,y+h,r);
-  ctx.arcTo(x,y+h,x,y,r);
-  ctx.arcTo(x,y,x+w,y,r);
-  ctx.closePath();
-  if(fill) ctx.fill();
-}
-
-function drawChibi(){
-    const sx = player.x;
-    const sy = player.y - worldOffsetY;
-
-    ctx.save();
-    ctx.translate(sx + player.w/2, sy + player.h/2);
-
-    // shadow
-    ctx.globalAlpha = 0.15;
-    ctx.beginPath(); ctx.ellipse(0, player.h/2, 22, 8, 0,0,Math.PI*2); ctx.fill();
-    ctx.globalAlpha = 1;
-
-    // body
-    ctx.fillStyle = "#ffdfe9";
-    roundRect(ctx, -14, -4, 28, 32, 8, true);
-
-    // hijab
-    ctx.fillStyle = "#d9a7cf";
-    ctx.beginPath();
-    ctx.moveTo(-26, -28);
-    ctx.quadraticCurveTo(0,-44,26,-28);
-    ctx.quadraticCurveTo(14,-4,26,18);
-    ctx.quadraticCurveTo(0,28,-26,18);
-    ctx.closePath();
-    ctx.fill();
-
-    // face
-    ctx.fillStyle = "#fff1e6";
-    roundRect(ctx, -12, -20, 24, 24, 8, true);
-
-    // eyes
-    ctx.fillStyle = "#2b2b2b";
-    ctx.beginPath(); ctx.ellipse(-6,-8,3.8,5,0,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(6,-8,3.8,5,0,0,Math.PI*2); ctx.fill();
-
-    ctx.restore();
-}
-
-// ========== UPDATE LOGIC ==========
-
-let particles = [];
-let balloons = [];
-let petals = [];
-
-function spawnDust(x,y){
-  for(let i=0;i<8;i++){
-    particles.push({
-      x,y, vx:(Math.random()-0.5)*2, vy:-Math.random()*2,
-      life:600, born:Date.now(), type:'dust'
-    });
-  }
-}
-
-function spawnSpark(x,y){
-  for(let i=0;i<8;i++){
-    particles.push({
-      x,y, vx:(Math.random()-0.5)*2, vy:-Math.random()*1.2,
-      life:900, born:Date.now(), type:'spark'
-    });
-  }
-}
-
-function spawnBalloon(){
-  balloons.push({
-    x: Math.random()*W,
-    y: H + 40,
-    vx:(Math.random()-0.5)*0.5,
-    vy:-1.2 - Math.random()*0.4,
-    color: ["#ff9ccf","#9ed2ff","#ffe38b"][Math.floor(Math.random()*3)]
-  });
-}
-
-function spawnPetals(){
-  for(let i=0;i<12;i++){
-    petals.push({
-      x: Math.random()*W,
-      y: -20,
-      vx:(Math.random()-0.5)*1,
-      vy:0.4 + Math.random()*0.8,
-      rot: Math.random()*6.28,
-      rSpeed:(Math.random()-0.5)*0.06,
-      color: ["#ffd7ea","#ffdfed","#ffeef2"][Math.floor(Math.random()*3)]
-    });
-  }
-}
-
-function update(){
-
-  // movement
-  if(keys.left) player.vx -= MOVE;
-  if(keys.right) player.vx += MOVE;
-
-  // jump
-  if(keys.up && player.onGround){
-     player.vy = -JUMP;
-     player.onGround = false;
-     keys.up = false;
-
-     // music start 40s
-     if(!musicStarted){
-        bgAudio.currentTime = 20;
-        bgAudio.play();
-        musicStarted = true;
-     }
-  }
-
-  // physics
-  player.vy += GRAV;
-  player.vx *= 0.9;
-
-  player.x += player.vx;
-  player.y += player.vy;
-
-  // boundaries
-  if(player.x<6) player.x=6;
-  if(player.x + player.w > W-6) player.x = W-6 - player.w;
-
-  // collisions
-  player.onGround = false;
-  for(let p of platforms){
-    const px=p.x, py=p.y, pw=p.w, ph=p.h;
-
-    if(player.vy>=0 &&
-       player.x+player.w > px &&
-       player.x < px+pw &&
-       player.y+player.h > py &&
-       player.y+player.h < py+ph+12){
-
-        player.y = py - player.h;
-        player.vy = 0;
-        player.onGround = true;
-
-        if(p.id>=0){
-          showMessage(messages[p.id]);
-          lvlEl.textContent = p.id+1;
-        }
-
-        spawnDust(player.x+player.w/2, player.y+player.h);
-        spawnSpark(player.x+player.w/2, player.y+player.h-6);
-    }
-  }
-
-  // camera follow
-  const targetY = H*0.45;
-  const diff = (player.y - worldOffsetY) - targetY;
-  worldOffsetY += diff * 0.12;
-  if(worldOffsetY<0) worldOffsetY=0;
-
-  // particles decay
-  const now = Date.now();
-  particles = particles.filter(pt=>{
-    const age = now - pt.born;
-    if(age>pt.life) return false;
-    pt.x += pt.vx;
-    pt.y += pt.vy;
-    return true;
-  });
-
-  // balloons spawn after level 18
-  const lvl = getLevel();
-  if(lvl>=14 && Math.random()<0.02) spawnBalloon();
-
-  balloons = balloons.filter(b=>{
-    b.x += b.vx;
-    b.y += b.vy;
-    return b.y > -80;
-  });
-
-  // petals near top
-  if(lvl>=18 && Math.random()<0.04) spawnPetals();
-  petals = petals.filter(p=>{
-    p.x+=p.vx; p.y+=p.vy; p.rot+=p.rSpeed;
-    return p.y < H+100;
-  });
-
-  // FLAG REACH
-  if(player.x < flag.x+flag.w &&
-     player.x+player.w > flag.x &&
-     player.y < flag.y + flag.h){
-       showEnding();
-  }
-
-  // music stop at 70s
-  if(musicStarted && bgAudio.currentTime>=70){
-    bgAudio.pause();
-    bgAudio.currentTime = 70;
-  }
-}
-
-// LEVEL GET
-function getLevel(){
-  let best=0;
-  for(let p of platforms){
-    if(p.id>=0 && player.y <= p.y + 10) best = Math.max(best,p.id+1);
-  }
-  return best;
-}
-
-// ENDING SCREEN
-function showEnding(){
-  endingOverlay.style.display = "flex";
-
-  // load photos
-  const imgs = [
-    "IMG-20241121-WA0001.jpg",
-    "IMG-20241121-WA0000.jpg",
-    "IMG_20250726_100346.jpg",
-    "IMG-20250324-WA0016.jpg",
-    "IMG-20250503-WA0005.jpg"
-  ];
-
-  photoRow.innerHTML = "";
-  imgs.forEach((src,i)=>{
-    const im = document.createElement("img");
-    im.src = src;
-    im.style.opacity = "100";
-    photoRow.appendChild(im);
-    setTimeout(()=> im.style.opacity="1", 500+i*600);
-  });
-
-  for(let i=0;i<40;i++){
-    particles.push({
-      x:Math.random()*W,
-      y:Math.random()*H,
-      vx:(Math.random()-0.5)*2,
-      vy:1+Math.random()*1.4,
-      life:2000,
-      born:Date.now(),
-      type:"confetti"
-    });
-  }
-}
-
-// DRAW EVERYTHING
-function draw(){
-  ctx.clearRect(0,0,W,H);
-
-  // background sky
-  const g = ctx.createLinearGradient(0,0,0,H);
-  g.addColorStop(0,"#9dd6ff");
-  g.addColorStop(1,"#bff1d6");
-  ctx.fillStyle=g;
-  ctx.fillRect(0,0,W,H);
-
-  // flowers ground
-  drawGround();
-
-  // platforms
-  platforms.forEach(p=>{
-    ctx.fillStyle="#8bc34a";
-    roundRect(ctx, p.x, p.y - worldOffsetY, p.w, p.h, 6, true);
-  });
-
-  // particles
-  particles.forEach(pt=>{
-    if(pt.type==="dust"){
-      ctx.fillStyle="rgba(200,200,200,0.7)";
-      ctx.fillRect(pt.x, pt.y - worldOffsetY, 4,4);
-    }else if(pt.type==="spark"){
-      ctx.fillStyle="rgba(255,230,180,0.9)";
-      ctx.fillRect(pt.x, pt.y - worldOffsetY, 3,3);
-    }else{
-      ctx.fillStyle=["#ff9ccf","#ffd27a","#9ed2ff","#c9ffdd"][(pt.x|0)%4];
-      ctx.fillRect(pt.x, pt.y - worldOffsetY, 5,9);
-    }
-  });
-
-  // balloons
-  balloons.forEach(b=>{
-    ctx.fillStyle=b.color;
-    ctx.beginPath(); ctx.ellipse(b.x,b.y - worldOffsetY*0.02,18,24,0,0,Math.PI*2);
-    ctx.fill();
-  });
-
-  // petals
-  petals.forEach(p=>{
-    ctx.save();
-    ctx.translate(p.x, p.y - worldOffsetY*0.1);
-    ctx.rotate(p.rot);
-    ctx.fillStyle=p.color;
-    ctx.beginPath(); ctx.ellipse(0,0,6,10,0,0,Math.PI*2); ctx.fill();
-    ctx.restore();
-  });
-
-  // flag
-  const fy = flag.y - worldOffsetY;
-  ctx.fillStyle="#333";
-  ctx.fillRect(flag.x, fy, flag.w, flag.h);
-  ctx.fillStyle="#ff77aa";
-  ctx.fillRect(flag.x+flag.w, fy+20, 70, 30);
-
-  drawChibi();
-}
-
-// ground decorative
-function drawGround(){
-  const y = 3220 - worldOffsetY;
-  if(y > H) return;
-
-  ctx.fillStyle="#76c85b";
-  ctx.fillRect(0,y,W,H-y);
-
-  for(let i=20;i<W;i+=60){
-    const fx = i + Math.sin(i*0.2 + worldOffsetY*0.004)*10;
-    const fy = y+20+Math.sin(i*0.1)*4;
-    drawFlower(fx,fy);
-  }
-}
-
-function drawFlower(x,y){
-  ctx.save();
-  ctx.translate(x,y);
-  ctx.fillStyle="#ffb6d5";
-  for(let i=0;i<5;i++){
-    ctx.beginPath();
-    ctx.ellipse(
-      Math.cos(i*1.256)*6,
-      Math.sin(i*1.256)*6,
-      5,8,0,0,Math.PI*2
-    );
-    ctx.fill();
-  }
-  ctx.fillStyle="#fff8";
-  ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
-  ctx.restore();
-}
-
-// LOOP
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-loop();
-</script>
+
+</section>
+
+<!-- ================= PAGE 2 ================= -->
+
+<section class="page">
+
+    <div class="glass">
+
+        <h2>💌</h2>
+
+        <p>
+            Tap the envelope
+        </p>
+
+        <div class="envelope">
+
+            ✉️
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= PAGE 3 ================= -->
+
+<section class="page">
+
+    <div class="glass">
+
+        <h2>Letter</h2>
+
+        <p id="typing"></p>
+
+        <button class="next">
+
+            Continue →
+
+        </button>
+
+    </div>
+
+</section>
+
+<!-- ================= PAGE 4 ================= -->
+
+<section class="page">
+
+    <div class="glass gallery">
+
+        <h2>Our Memories</h2>
+
+        <div class="photos">
+
+            <img src="assets/images/photo1.jpg">
+
+            <img src="assets/images/photo2.jpg">
+
+            <img src="assets/images/photo3.jpg">
+
+            <img src="assets/images/photo4.jpg">
+
+            <img src="assets/images/photo5.jpg">
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= PAGE 5 ================= -->
+
+<section class="page">
+
+    <div class="glass">
+
+        <h2>Timeline</h2>
+
+        <div class="timeline">
+
+            <div>🌷 First Meet</div>
+
+            <div>💬 First Chat</div>
+
+            <div>📷 Beautiful Memories</div>
+
+            <div>🎂 Today</div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ================= PAGE 6 ================= -->
+
+<section class="page">
+
+    <div class="glass">
+
+        <h2>My Wishes</h2>
+
+        <ul>
+
+            <li>✨ Always be happy</li>
+
+            <li>✨ Stay healthy</li>
+
+            <li>✨ Never stop dreaming</li>
+
+            <li>✨ Keep smiling</li>
+
+        </ul>
+
+    </div>
+
+</section>
+
+<!-- ================= PAGE 7 ================= -->
+
+<section class="page">
+
+    <div class="glass">
+
+        <img src="assets/images/cake.png"
+             class="cake">
+
+        <button id="blow">
+
+            Blow the Candle 🎂
+
+        </button>
+
+    </div>
+
+</section>
+
+<!-- ================= PAGE 8 ================= -->
+
+<section class="page ending">
+
+    <div class="glass">
+
+        <h1>
+
+            Happy Birthday ❤️
+
+        </h1>
+
+        <p>
+
+            Thank you for existing.
+
+        </p>
+
+        <h3>
+
+            See you in many birthdays ahead.
+
+        </h3>
+
+    </div>
+
+</section>
+
+<script src="script.js"></script>
+
+</body>
+</html>
